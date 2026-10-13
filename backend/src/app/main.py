@@ -16,7 +16,9 @@ from app.core import constants
 from app.core.config import get_settings
 from app.core.exceptions import AppException
 from app.core.logging import setup_logging
+from app.repositories.campaign_store import InMemoryCampaignStore
 from app.schemas.common import ErrorDetail, StandardErrorResponse, ValidationErrorItem
+from app.services.campaign_service import CampaignService
 
 logger = logging.getLogger("app")
 
@@ -91,6 +93,8 @@ async def lifespan(app: FastAPI):
     settings = get_settings()
     setup_logging(settings)
     app.state.start_time_monotonic = time.monotonic()
+    app.state.campaign_store = InMemoryCampaignStore()
+    app.state.campaign_service = CampaignService(store=app.state.campaign_store)
     app.state.active_campaigns_count = 0
     logger.info(
         "Application starting up: service=%s version=%s env=%s host=%s port=%d",

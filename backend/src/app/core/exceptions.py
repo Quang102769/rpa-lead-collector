@@ -52,7 +52,7 @@ class CampaignNotFoundError(AppException):
     def __init__(
         self,
         message: str = "Không tìm thấy chiến dịch yêu cầu.",
-        detail: str | None = None,
+        detail: str | None = "Kiểm tra campaign_id và thử lại.",
     ) -> None:
         super().__init__(
             code=constants.ERR_CAMPAIGN_NOT_FOUND,
@@ -64,6 +64,25 @@ class CampaignNotFoundError(AppException):
 
 # Backward-compatible alias
 ResourceNotFoundError = CampaignNotFoundError
+
+
+class CampaignStateTransitionError(AppException, ValueError):
+    """Raised when an invalid campaign status transition is attempted."""
+
+    def __init__(
+        self,
+        from_status: str,
+        to_status: str,
+        message: str | None = None,
+    ) -> None:
+        msg = message or f"Không thể chuyển {from_status} sang {to_status}"
+        super().__init__(
+            code=constants.ERR_CONFLICT,
+            message=msg,
+            detail="Trạng thái hiện tại không cho phép thao tác chuyển đổi này.",
+            status_code=400,
+            stage=constants.STAGE_POLICY_CHECK,
+        )
 
 
 class ExportNotReadyError(AppException):
