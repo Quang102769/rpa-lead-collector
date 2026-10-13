@@ -18,7 +18,7 @@ Mục tiêu cốt lõi:
 * **Trong phạm vi đặc tả:**
   * Đường ống xử lý dùng chung (Shared Pipeline) cho cả 2 ngành **Giáo dục (Education)** và **Sản xuất (Manufacturing)**.
   * Phạm vi địa lý: Toàn quốc Việt Nam hoặc lọc theo một tỉnh/thành phố cụ thể (bắt buộc hỗ trợ và có dữ liệu kiểm chứng tại Thành phố Đà Nẵng).
-  * Vận hành trên môi trường máy trạm cá nhân (**Local PoC/Demo**), phục vụ 01 lập trình viên phát triển trong thời hạn 05 ngày làm việc.
+  * Vận hành trên môi trường máy trạm cá nhân (**Local PoC/Demo**), phục vụ giai đoạn khởi tạo (Phase 1: Local Foundation & Core Pipeline).
   * Quản lý trạng thái chiến dịch trong bộ nhớ RAM (`InMemoryCampaignStore`), xuất dữ liệu thành phẩm ra file Microsoft Excel (`.xlsx`) lưu tại thư mục `exports/`.
   * Hỗ trợ 2 chế độ thực thi minh bạch: **Fixture Mode** (mặc định khi chưa duyệt nguồn live) và **Live Mode** (thu thập trực tiếp khi có văn bản phê duyệt chính thức).
 * **Ngoài phạm vi đặc tả:**
@@ -48,9 +48,11 @@ Mục tiêu cốt lõi:
 5. **Tách biệt Trạng thái Vòng đời Hạ tầng và Chất lượng Dữ liệu (Decoupled State and Quality):**
    * Vòng đời chiến dịch (`CampaignStatus`) phản ánh sự vận hành của hạ tầng: `PENDING`, `RUNNING`, `COMPLETED`, `PARTIAL_SUCCESS`, `FAILED`.
    * Chất lượng từng dòng dữ liệu (`RecordQualityStatus`) phản ánh giá trị nghiệp vụ: `VALID`, `PARTIAL_MISSING`, `REJECTED`, `DUPLICATE`. Hai hệ thống trạng thái này độc lập và không được gộp lẫn.
-6. **Kiến trúc Monolith Cục bộ Tối giản (Pragmatic Local Monolith):**
-   * Thiết kế phẳng, thực thi tuần tự trong cùng tiến trình ứng dụng (`BackgroundTasks`).
-   * Không đưa thêm database server, message queue hay microservices vào mã nguồn để bảo đảm khả năng hoàn thành và kiểm thử trọn vẹn trong 5 ngày.
+6. **Kiến trúc Monolith Cục bộ & Quy tắc Dispatch Phân kỳ (Modular Monolith & Phased Dispatch):**
+   * Trong **Phase 1**, toàn bộ pipeline thực thi tuần tự in-process trong cùng tiến trình máy chủ (`FastAPI BackgroundTasks`).
+   * **Quy tắc Dispatch Cốt lõi:** Khi chưa có Redis hoặc message broker bền vững, Backend và Worker **KHÔNG ĐƯỢC PHÉP** chạy ở 2 tiến trình độc lập và chia sẻ hàng đợi trong RAM. Hai tiến trình hệ điều hành riêng biệt không thể chia sẻ vùng nhớ bộ nhớ RAM.
+   * Trong **Phase 4**, các module pipeline từ Giai đoạn 3 đến 10 sẽ được tách thành service độc lập `rpa-worker/`, giao tiếp với Backend qua Redis Task Queue.
+   * Vai trò của AI Engine: Trong Phase 1, trích xuất được thực hiện qua LLM Provider Adapter; trong Phase 5, `ai-engine/` được tách thành microservice chuyên biệt.
    * Cập nhật tiến độ trên giao diện thông qua cơ chế **Polling API định kỳ (mỗi 1.5s – 2.0s)**, không tuyên bố là cập nhật "real-time" khi chưa sử dụng WebSocket/SSE.
 
 ---
@@ -60,19 +62,19 @@ Mục tiêu cốt lõi:
 ### 3.1 Ánh xạ 11 Giai đoạn Pipeline vào 8 Module Kiến trúc
 Để tuân thủ thiết kế [docs/architecture.md](file:///D:/ai-rpa-lead-generator/docs/architecture.md) và tránh over-engineering, 11 giai đoạn nghiệp vụ của pipeline được ánh xạ chặt chẽ vào các module kỹ thuật hiện có mà không phát sinh thêm service dư thừa:
 
-| STT | Giai đoạn Nghiệp vụ Pipeline | Module Kỹ thuật Chịu trách nhiệm | Vị trí Mã nguồn Triển khai |
-| :---: | :--- | :--- | :--- |
-| **1** | Campaign Request Validation | FastAPI API Layer (Route Handlers) | `src/api/routes_campaign.py` |
-| **2** | Campaign Initialization | FastAPI API Layer & Orchestrator | `src/api/routes_campaign.py` & `src/orchestrator/` |
-| **3** | Source Policy Check | Source Policy Engine | `src/collector/policy.py` |
-| **4** | Source Collection | Data Collector Engine | `src/collector/collector.py` |
-| **5** | Content Preparation | Data Collector (Helper tích hợp bên trong) | `src/collector/collector.py` (`TextPreparationHelper`) |
-| **6** | LLM Structured Extraction | LLM Extractor Adapter | `src/extractor/llm_adapter.py` |
-| **7** | Lead Validation | Data Validator | `src/validation/validator.py` |
-| **8** | Geographic Normalization | Geographic Normalizer (Sub-component) | `src/validation/normalizer.py` |
-| **9** | Deduplication | Deterministic Deduplicator | `src/deduplication/deduplicator.py` |
-| **10**| Excel Export | Excel Exporter Service | `src/exporter/excel_exporter.py` |
-| **11**| Summary and Final Status | Campaign Orchestrator & State Store | `src/orchestrator/campaign_orchestrator.py` |
+| STT | Giai đoạn Nghiệp vụ Pipeline | Module Chịu trách nhiệm (Phase 1 Monolith) | Vị trí Mã nguồn Phase 1 | Định hướng Phase 4 (Worker Extraction) |
+| :---: | :--- | :--- | :--- | :--- |
+| **1** | Campaign Request Validation | FastAPI API Layer | `backend/src/app/api/v1/campaigns.py` | Thuộc `backend/` (API Gateway / Router) |
+| **2** | Campaign Initialization | Application Services | `backend/src/app/services/campaign_service.py` | Thuộc `backend/` (Task Producer) |
+| **3** | Source Policy Check | Source Policy Engine | `backend/src/app/collectors/policy.py` | Tách vào `rpa-worker/` (Policy Engine) |
+| **4** | Source Collection | Data Collector Engine | `backend/src/app/collectors/` | Tách vào `rpa-worker/` (Collector Adapter) |
+| **5** | Content Preparation | Text Preparation Helper | `backend/src/app/collectors/` | Tách vào `rpa-worker/` (Content Cleaner) |
+| **6** | LLM Structured Extraction | LLM Extractor Adapter | `backend/src/app/extraction/llm_adapter.py` | Tách vào `rpa-worker/` (hoặc `ai-engine/` ở Phase 5) |
+| **7** | Lead Validation | Data Validator | `backend/src/app/validation/lead_validator.py` | Tách vào `rpa-worker/` (Validator Engine) |
+| **8** | Geographic Normalization | Geographic Normalizer | `backend/src/app/validation/geo_normalizer.py` | Tách vào `rpa-worker/` (Geo Normalizer) |
+| **9** | Deduplication | Deterministic Deduplicator | `backend/src/app/deduplication/deduplicator.py`| Tách vào `rpa-worker/` (Deduplicator Engine) |
+| **10**| Excel Export | Excel Exporter Service | `backend/src/app/exporters/excel_exporter.py` | Tách vào `rpa-worker/` (Exporter Service) |
+| **11**| Summary and Final Status | Pipeline Orchestrator | `backend/src/app/pipeline/orchestrator.py` | Tách vào `rpa-worker/` (Worker Orchestrator) |
 
 ### 3.2 Luồng Dữ liệu Tổng thể xuyên suốt Pipeline
 Dữ liệu di chuyển tuần tự qua pipeline theo mô hình chuyển đổi đối tượng bất biến (Immutable Data Flow):
@@ -165,7 +167,7 @@ CampaignSummaryMetrics & Cập nhật Trạng thái Cuối cùng (COMPLETED / PA
   7. Ngay khi background task nhận quyền điều khiển từ CPU event loop, chuyển trạng thái chiến dịch sang `status = CampaignStatus.RUNNING` và `current_step = "CHECKING_POLICY"`.
 * **Ràng buộc lưu trữ bộ nhớ RAM:**
   > [!IMPORTANT]
-  > Trạng thái chiến dịch được lưu trữ thuần túy trong RAM (`InMemoryCampaignStore`). Nếu ứng dụng backend bị restart hoặc crash trong quá trình chạy, toàn bộ tiến trình của chiến dịch đang thực thi sẽ bị mất và không thể tự phục hồi. Điều này phù hợp với phạm vi PoC chạy local cho 1 developer trong 5 ngày.
+  > Trạng thái chiến dịch được lưu trữ thuần túy trong RAM (`InMemoryCampaignStore`). Nếu ứng dụng backend bị restart hoặc crash trong quá trình chạy, toàn bộ tiến trình của chiến dịch đang thực thi sẽ bị mất và không thể tự phục hồi. Điều này phù hợp với phạm vi PoC chạy local trong giai đoạn đầu (Phase 1); tính bền vững qua restart sẽ được bổ sung ở Phase 3 khi tích hợp PostgreSQL.
 * **Điều kiện thành công:** Cấp phát thành công context trong RAM và kích hoạt tác vụ nền an toàn.
 * **Các lỗi có thể xảy ra:** `ERR_SYS_INTERNAL` (Không thể ghi thư mục `exports/` hoặc `logs/` do lỗi phân quyền đĩa cứng).
 * **Hành vi khi lỗi:** Trả về HTTP `500 Internal Server Error`, ghi log hệ thống.
@@ -339,7 +341,7 @@ CampaignSummaryMetrics & Cập nhật Trạng thái Cuối cùng (COMPLETED / PA
 * **Input:** Danh sách `valid_leads` từ Giai đoạn 7, tham số `target_province` từ `CampaignConfig`, và cấu hình nạp từ điển `data/provinces_reference.json`.
 * **Output:** Danh sách `valid_leads` đã được cập nhật trường `province` chuẩn hóa và lọc theo địa phương yêu cầu.
 * **Các bước xử lý nghiệp vụ:**
-  1. **Yêu cầu Bộ Dữ liệu Địa lý Có Phiên bản (Chờ khởi tạo ở Ngày 2):**
+  1. **Yêu cầu Bộ Dữ liệu Địa lý Có Phiên bản (Cần chuẩn bị trước khi chạy bộ lọc địa phương):**
      * Dữ liệu địa lý phải có cấu trúc siêu dữ liệu hoàn chỉnh, không hard-code danh sách 63 tỉnh/thành cũ làm danh mục hiện hành:
        ```json
        {
@@ -358,7 +360,7 @@ CampaignSummaryMetrics & Cập nhật Trạng thái Cuối cùng (COMPLETED / PA
          }
        }
        ```
-     * *Lưu ý:* Tài liệu thiết kế không tự bịa đặt rằng file này đã tồn tại sẵn; việc tạo file mẫu thực tế là đầu việc kỹ thuật đầu tiên của Ngày 2.
+     * *Lưu ý:* Tài liệu thiết kế không tự bịa đặt rằng file này đã tồn tại sẵn; việc nạp file tham chiếu thực tế là đầu việc kỹ thuật cần chuẩn bị trước khi kiểm thử tính năng lọc địa phương.
   2. **Giải thuật Ánh xạ Tên Tỉnh/Thành (Matching Algorithm):**
      * Trích xuất chuỗi địa chỉ thô (`address`) và trường `province` do LLM bóc tách.
      * Chuyển chuỗi về chữ thường, loại bỏ dấu câu và chuẩn hóa khoảng trắng.
@@ -808,7 +810,7 @@ Các quyết định mở dưới đây cần người phụ trách kỹ thuật
 
 | ID | Vấn đề cần quyết định | Phương án đề xuất | Căn cứ | Người có thẩm quyền quyết định | Ảnh hưởng nếu chưa chốt | Thành phần nào bị chặn triển khai |
 | :---: | :--- | :--- | :--- | :---: | :--- | :--- |
-| **`DEC-01`** | **Phê duyệt Nguồn Live Chính thức** | Mặc định vận hành ở **Fixture Mode** chạy trên dữ liệu mẫu offline tại `tests/fixtures/` cho buổi demo Ngày 5. | Báo cáo `docs/source-research.md` (mục 1.2: 0 nguồn live được duyệt). | TechLead | Pipeline phải dùng dữ liệu fixture đa địa phương có gắn nhãn mô phỏng minh bạch. | Không bị chặn (Chạy Fixture Mode). Bị chặn nếu muốn chạy Live Crawling. |
+| **`DEC-01`** | **Phê duyệt Nguồn Live Chính thức** | Mặc định vận hành ở **Fixture Mode** chạy trên dữ liệu mẫu offline tại `tests/fixtures/` cho giai đoạn thử nghiệm ban đầu (Phase 1). | Báo cáo `docs/source-research.md` (mục 1.2: 0 nguồn live được duyệt). | TechLead | Pipeline phải dùng dữ liệu fixture đa địa phương có gắn nhãn mô phỏng minh bạch. | Không bị chặn (Chạy Fixture Mode). Bị chặn nếu muốn chạy Live Crawling. |
 | **`DEC-02`** | **Văn bản Danh mục Địa lý & Xử lý Tên Lịch sử** | Sử dụng bộ dữ liệu có phiên bản `data/provinces_reference.json` (tham chiếu GSO kèm alias); địa danh lịch sử chỉ ánh xạ khi có quy tắc rõ ràng; thiếu thông tin gán `null`. | Báo cáo `docs/source-research.md` (mục 3.2: VASI khuyết thiếu Đà Nẵng); `docs/PRD.md` (FR-05). | TechLead | Pipeline nạp từ điển JSON độc lập ngoài code; nếu có quyết định mới, chỉ cập nhật file JSON mà không sửa code. | Không bị chặn (Áp dụng từ điển JSON tham chiếu tạm thời). |
 | **`DEC-03`** | **Chỉ số Giới hạn Bản ghi Demo (`max_records`)** | Thiết lập cấu hình mặc định là **20 bản ghi** và mức trần tối đa **50 bản ghi** cho mỗi lượt chạy demo. | `docs/PRD.md` (AC-01.2: đề xuất mặc định 20 bản ghi). | TechLead | Giữ tốc độ demo local và kiểm soát chi phí gọi token LLM API. | Không bị chặn (Áp dụng cấu hình mặc định 20/50). |
 | **`DEC-04`** | **Ngôn ngữ Tiêu đề Hiển thị Cột trong File Excel** | File Excel hỗ trợ tiêu đề tiếng Anh chuẩn `docs/data-dictionary.md` (`Company Name`, `Industry`...) hoặc ánh xạ tiếng Việt có dấu (`Tên Doanh nghiệp`, `Ngành nghề`...) qua từ điển mapping. | `docs/data-dictionary.md` (Bảng 8.3 dùng tiếng Anh); `docs/PRD.md` (yêu cầu báo cáo trực quan cho người dùng Việt). | TechLead | Exporter xây dựng sẵn từ điển ánh xạ tiêu đề `HEADER_MAPPING`; chỉ cần đổi cấu hình mà không sửa logic pipeline. | Không bị chặn (Mặc định tiêu đề tiếng Anh kèm từ điển mapping sẵn sàng). |
@@ -834,4 +836,4 @@ Các quyết định mở dưới đây cần người phụ trách kỹ thuật
 
 ---
 
-*Tài liệu được xây dựng bởi Senior Software Architect & Backend Engineer. Toàn bộ thiết kế API Contract tại `docs/api-contract.md` và mã nguồn triển khai từ Ngày 2 đến Ngày 5 phải tuân thủ nghiêm ngặt đặc tả đường ống xử lý dữ liệu này.*
+*Tài liệu được xây dựng bởi Senior Software Architect & Backend Engineer. Toàn bộ thiết kế API Contract tại `docs/api-contract.md` và mã nguồn triển khai từ Phase 1 trở đi phải tuân thủ nghiêm ngặt đặc tả đường ống xử lý dữ liệu này.*

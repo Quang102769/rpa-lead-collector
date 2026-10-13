@@ -9,29 +9,27 @@
 * **Tên tài liệu:** Báo cáo Nghiên cứu và Khảo sát Nguồn Dữ liệu Khả thi (Source Research & Feasibility Document)
 * **Mã tài liệu:** `RESEARCH-DATA-LEADGEN-001`
 * **Phiên bản:** `1.2-NATIONWIDE` (Cập nhật yêu cầu bắt buộc: Phạm vi Toàn quốc Việt Nam & Bắt buộc có dữ liệu Đà Nẵng)
-* **Ngày cập nhật:** 13/10/2026 (Ngày 1 của Kế hoạch MVP 5 ngày)
-* **Tác giả:** Senior Business Analyst & Data Acquisition Engineer
-* **Người xem xét & Phê duyệt:** TechLead
-* **Trạng thái tài liệu:** `Chờ TechLead phê duyệt (Pending TechLead Approval)`
-* **Liên kết tài liệu gốc:** [`docs/PRD.md`](file:///D:/ai-rpa-lead-generator/docs/PRD.md)
+* **Ngày cập nhật:** 13/10/2026
+* **Trạng thái tài liệu:** `Chờ phê duyệt`
+* **Liên kết tài liệu gốc:** [`docs/PRD.md`]
 
 ### Quy ước Trạng thái Đánh giá Nguồn Dữ liệu:
 * **`Candidate — Not reviewed`**: Nguồn mới nằm trong danh sách đề xuất sơ bộ, chưa kiểm tra kỹ thuật.
 * **`Requires technical validation`**: Nguồn có tiềm năng nhưng chưa đủ bằng chứng kỹ thuật (chưa có resource_id cụ thể, chưa kiểm chứng API, hoặc chưa kiểm tra tính nhất quán trên mẫu lớn).
 * **`Requires TechLead approval`**: Nguồn đã vượt qua khảo sát kỹ thuật, xác minh cấu trúc DOM, phân trang và độ phủ địa lý, nhưng cần TechLead phê duyệt về điều khoản sử dụng (ToS) và rủi ro pháp lý liên quan đến dữ liệu liên hệ.
 * **`Approved`**: Nguồn đã có văn bản hoặc chỉ đạo phê duyệt chính thức từ TechLead. *(Hiện chưa có nguồn nào có trạng thái này)*.
-* **`Rejected`**: Nguồn bị loại bỏ do không đáp ứng phạm vi địa lý toàn quốc, vi phạm bản quyền, ToS cấm đoán hoàn toàn, có CAPTCHA phức tạp, hoặc không khả thi trong 5 ngày.
+* **`Rejected`**: Nguồn bị loại bỏ do không đáp ứng phạm vi địa lý toàn quốc, vi phạm bản quyền, ToS cấm đoán hoàn toàn, có CAPTCHA phức tạp, hoặc có rào cản kỹ thuật vượt quá phạm vi dự án.
 
 ---
 
 ## 1. Purpose and Research Scope (Mục đích & Phạm vi Nghiên cứu)
 
 ### 1.1 Mục đích
-Tài liệu này được cập nhật trong khuôn khổ **Ngày 1** của dự án *AI RPA Lead Collector MVP* nhằm:
+Tài liệu này được cập nhật của dự án *AI RPA Lead Collector MVP* nhằm:
 1. Nghiên cứu thực nghiệm, kiểm chứng kỹ thuật và rà soát pháp lý khách quan đối với các nguồn dữ liệu web tiềm năng phục vụ thu thập thông tin doanh nghiệp trong hai ngành: **Giáo dục (Education)** và **Sản xuất (Manufacturing)**.
-2. Đáp ứng **yêu cầu thay đổi bắt buộc về phạm vi địa lý:** Hệ thống phải hỗ trợ **Toàn quốc Việt Nam**, trong đó **Thành phố Đà Nẵng** là địa phương bắt buộc phải nằm trong phạm vi hỗ trợ và có dữ liệu kiểm chứng.
-3. Cung cấp cơ sở dữ liệu thực nghiệm có ghi nhận vết kiểm toán (audit log: URL mẫu, ngày khảo sát, phân tích DOM thực tế, bằng chứng về độ phủ tỉnh/thành) giúp **Developer** lập trình bộ thu thập và bộ lọc địa lý trong Ngày 2.
-4. Đệ trình lên **TechLead** bảng so sánh khách quan, phân định rõ ràng giữa sự thật đã kiểm chứng và các ước tính sơ bộ, làm căn cứ phê duyệt nguồn hoặc kích hoạt kế hoạch dự phòng.
+2. Đáp ứng **yêu cầu thay đổi về phạm vi địa lý:** Hệ thống phải hỗ trợ **Toàn quốc Việt Nam**, trong đó **Thành phố Đà Nẵng** là địa phương bắt buộc phải nằm trong phạm vi hỗ trợ và có dữ liệu kiểm chứng.
+3. Cung cấp cơ sở dữ liệu thực nghiệm có ghi nhận vết kiểm toán (audit log: URL mẫu, ngày khảo sát, phân tích DOM thực tế, bằng chứng về độ phủ tỉnh/thành) giúp **Developer** lập trình bộ thu thập và bộ lọc địa lý trong giai đoạn phát triển collector adapter.
+
 
 ### 1.2 Phạm vi Nghiên cứu Địa lý & Nghiệp vụ
 * **Phạm vi Địa lý Mục tiêu:** **Toàn quốc Việt Nam (63 tỉnh/thành phố)**.
@@ -43,16 +41,15 @@ Tài liệu này được cập nhật trong khuôn khổ **Ngày 1** của dự
 * **Phạm vi Ngành nghề:**
   * *Giáo dục (Education):* Trường học các cấp, trung tâm ngoại ngữ - tin học, cơ sở giáo dục nghề nghiệp (GDNN), doanh nghiệp EdTech.
   * *Sản xuất (Manufacturing):* Cơ khí chế tạo, điện - điện tử, sản xuất linh kiện, nhựa, bao bì, vật liệu công nghiệp.
-* **Ranh giới Kỹ thuật & Ràng buộc Thời hạn:**
-  * Thời hạn MVP nghiêm ngặt **5 ngày**, do **01 developer độc lập** triển khai.
-  * Chỉ nghiên cứu các nguồn có thể tích hợp và hoàn thành kiểm thử trong vòng **01 ngày làm việc (Ngày 2)**.
+* **Ranh giới Kỹ thuật:**
+  * Chỉ nghiên cứu các nguồn có thể tích hợp.
   * Tuyệt đối không sử dụng kỹ thuật bẻ khóa bot, giải CAPTCHA, bypass Cloudflare hay xâm nhập hệ thống sau màn hình đăng nhập trả phí (paywall).
 
 ---
 
 ## 2. Summary of Relevant Requirements from PRD (Tóm lược Yêu cầu từ PRD)
 
-Theo tài liệu [`docs/PRD.md`](file:///D:/ai-rpa-lead-generator/docs/PRD.md) và yêu cầu cập nhật phạm vi địa lý:
+Theo tài liệu [`docs/PRD.md`] và yêu cầu cập nhật phạm vi địa lý:
 
 | Mã Yêu cầu PRD | Nội dung Yêu cầu Ràng buộc | Tác động đến Lựa chọn Nguồn |
 | :--- | :--- | :--- |
@@ -61,7 +58,7 @@ Theo tài liệu [`docs/PRD.md`](file:///D:/ai-rpa-lead-generator/docs/PRD.md) v
 | **FR-03 & Mục 8** | **Polite Crawling & Robots.txt:** Bắt buộc tuân thủ chỉ dẫn `robots.txt` và độ trễ (rate limit) tối thiểu 1.0s – 3.0s giữa các request. | Loại bỏ các website cấm cào dữ liệu hoàn toàn trong `robots.txt` (`Disallow: /`) hoặc có hệ thống anti-bot chủ động chặn IP. |
 | **FR-07 & Mục 12** | **Source Traceability & 11 Fields:** Phải lưu `source_url`, `collected_at`. Tên công ty là bắt buộc (`Mandatory`), các trường liên hệ (`website`, `public_phone`, `public_email`, `address`, `province`, `description`) là tùy chọn (`Optional [TBD]`). | Nguồn phải có URL trang chi tiết cố định cho từng doanh nghiệp để truy vết; địa chỉ phải đủ thông tin để bóc tách hoặc gán nhãn `province`. |
 | **Mục 11** | **LLM Semantic Parser:** LLM nhận văn bản thô từ nguồn để trích xuất JSON; tuyệt đối không để LLM tự sinh dữ liệu (No hallucination). | Trang nguồn phải có khối văn bản nội dung giàu thông tin (rich text / metadata blocks) để LLM có ngữ cảnh trích xuất. |
-| **Mục 10.4 & FR-10**| **Fallback Plan:** Nếu nguồn chưa được duyệt trước 12:00 trưa Ngày 2, chuyển sang dùng bộ fixture tĩnh đã cấp phép, gắn nhãn `IS_SAMPLE_DATA = TRUE`. | Bộ fixture mẫu bắt buộc phải có các bản ghi tại nhiều tỉnh/thành, **trong đó bắt buộc có Đà Nẵng**. |
+| **Mục 10.4 & FR-10**| **Fallback Plan:** Nếu nguồn live chưa có văn bản phê duyệt chính thức, hệ thống bắt buộc vận hành ở chế độ Fixture Mode với dữ liệu mẫu tĩnh gắn nhãn `IS_SAMPLE_DATA = TRUE`. | Bộ fixture mẫu bắt buộc phải có các bản ghi tại nhiều tỉnh/thành, **trong đó bắt buộc có Đà Nẵng**. |
 | **Mục 12 & Mục 13** | **Biểu diễn Dữ liệu Thiếu (Missing Values):** Trong dữ liệu nội bộ là `null` hoặc `""`; trong Excel xuất ra là **ô trống (Empty cell)**. | Tuyệt đối không ghi `"N/A"`, `"null"`, hay `"undefined"` vào file Excel xuất ra. |
 
 ---
@@ -104,7 +101,7 @@ Các nguồn ứng viên được chấm điểm và phân tích dựa trên tha
 8. **Official API Availability:** Có cung cấp REST API/Open Data chính thức hay bắt buộc phải cào web (scraping)?
 9. **Rendering Requirements:** Chỉ cần HTTP client (`httpx`/`requests`) hay phải dùng Headless Browser (`Playwright`/`Selenium`)?
 10. **Terms of Service & Licensing:** Điều khoản ToS có cấm tự động hóa không; giấy phép dữ liệu mở hay bản quyền thương mại độc quyền?
-11. **Integration Effort in 5 Days:** Thời gian lập trình module collector có dưới 1 ngày (Day 2) không?
+11. **Integration Effort & Complexity:** Độ phức tạp và công sức lập trình module collector cho nguồn này ở mức nào?
 
 ---
 
@@ -142,7 +139,7 @@ Theo yêu cầu mới, nguồn dữ liệu ngành Giáo dục **bắt buộc ph�
 * **Đánh giá Pháp lý & ToS:**
   * `robots.txt` cho phép truy cập với `Crawl-delay: 5`.
   * ToS bảo lưu quyền sở hữu trí tuệ đối với cơ sở dữ liệu. Bắt buộc TechLead ký duyệt chấp thuận rủi ro ToS khi thu thập thử nghiệm nội bộ 15–20 records.
-* **Ước tính công sức triển khai:** **1.0 ngày (Ngày 2)**.
+* **Ước tính độ phức tạp triển khai:** **Trung bình thấp (Standard HTML Scraper)**.
 
 ---
 
@@ -153,8 +150,8 @@ Theo yêu cầu mới, nguồn dữ liệu ngành Giáo dục **bắt buộc ph�
 * **Trạng thái phê duyệt:** `Requires technical validation`
 * **Đánh giá:**
   * *Độ phủ:* Toàn quốc 100%, quản lý tất cả các trường học từ mầm non đến đại học tại 63 tỉnh/thành, bao gồm Đà Nẵng.
-  * *Rào cản kỹ thuật lớn cho MVP 5 ngày:* Hệ thống CSDL của Bộ là hệ thống thông tin quản lý nội bộ chuyên ngành, **bắt buộc phải có tài khoản đăng nhập được ngành cấp quyền**; không có REST API mở công khai cho bên ngoài.
-  * *Kết luận:* Không khả thi cho một MVP cào dữ liệu công khai trong vòng 5 ngày.
+  * *Rào cản kỹ thuật lớn:* Hệ thống CSDL của Bộ là hệ thống thông tin quản lý nội bộ chuyên ngành, **bắt buộc phải có tài khoản đăng nhập được ngành cấp quyền**; không có REST API mở công khai cho bên ngoài.
+  * *Kết luận:* Không khả thi cho công cụ thu thập dữ liệu công khai tự động.
 
 ---
 
@@ -214,7 +211,7 @@ Khảo sát chuyên sâu mã nguồn trang danh sách và form tìm kiếm của
 * **Độ đầy đủ trường dữ liệu (Khảo sát mẫu N=5 tại Đà Nẵng):**
   * Tên doanh nghiệp: 100% | Địa chỉ: 100% | Số điện thoại: 100% | Website: 80% | Email: 60%.
 * **Đánh giá Pháp lý & ToS:** Tương tự EDU-02, cần TechLead ký phê duyệt chấp thuận rủi ro ToS khi thu thập thử nghiệm nội bộ 15–20 records với `Crawl-delay: 5`.
-* **Ưu điểm lớn đối với MVP 5 ngày:** Nằm trên cùng một nền tảng với ngành Giáo dục, cho phép xây dựng một **Shared Collection Pipeline duy nhất** giải quyết trọn vẹn cả 2 ngành trên phạm vi Toàn quốc và Đà Nẵng.
+* **Ưu điểm lớn đối với kiến trúc hệ thống:** Nằm trên cùng một nền tảng với ngành Giáo dục, cho phép xây dựng một **Shared Collection Pipeline duy nhất** giải quyết trọn vẹn cả 2 ngành trên phạm vi Toàn quốc và Đà Nẵng.
 
 ---
 
@@ -244,7 +241,7 @@ Bảng đối chiếu tổng hợp toàn bộ các nguồn ứng viên theo các
 | **7. Đánh giá ToS / Bản quyền** | Cần rà soát ToS bản quyền | *Chưa xác minh giấy phép* | Dữ liệu chính quyền mở | Cần rà soát ToS bản quyền | Chưa có ToS; có rủi ro PII | Dữ liệu chính quyền mở |
 | **8. Khảo sát Mẫu Thực nghiệm** | **Đã lấy mẫu (N=5 toàn quốc, N=5 Đà Nẵng)** | **Chưa có mẫu cụ thể** | Khảo sát cổng chung | **Đã lấy mẫu (N=5 toàn quốc, N=5 Đà Nẵng)** | **Đã lấy mẫu N=2 (Không có Đà Nẵng)** | Khảo sát cổng chung |
 | **9. Tỷ lệ có SĐT & Website** | Phone: 100%, Web: ~80% *(N=10)*| *Chưa xác minh* | *Chưa xác minh* | Phone: 100%, Web: ~80% *(N=10)*| Phone: 100%, Web: 100% *(N=2, 17 tỉnh)*| *Chưa xác minh* |
-| **10. Khả thi trong MVP 5 ngày** | **Rất khả thi (~1.0 ngày)** | Không đáp ứng phạm vi | Cần tìm hiểu API | **Rất khả thi (~1.0 ngày)** | Khả thi nhưng thiếu Đà Nẵng | Cần tìm hiểu API |
+| **10. Mức độ Khả thi Kỹ thuật** | **Rất khả thi (DOM chuẩn)** | Không đáp ứng phạm vi | Cần tìm hiểu API | **Rất khả thi (Cùng nền tảng)** | Khả thi nhưng thiếu Đà Nẵng | Cần tìm hiểu API |
 | **Trạng thái Đề xuất** | `Requires TechLead approval` | `Rejected (Local only)` | `Requires technical validation`| `Requires TechLead approval` | `Requires TechLead approval (Thiếu Đà Nẵng)`| `Requires technical validation`|
 
 *\*Ghi chú:* CKAN API của Cổng Dữ liệu Mở các địa phương mới được xác nhận ở mức độ kiến trúc cổng; chưa xác minh được Resource ID của dataset cụ thể.
@@ -303,9 +300,9 @@ flowchart TD
 * **Nguyên tắc cốt lõi:** Việc một website có `robots.txt` cho phép truy cập chỉ mang ý nghĩa kỹ thuật (hạ tầng web không chặn bot), **hoàn toàn không thay thế cho giấy phép pháp lý cấp quyền khai thác dữ liệu**.
 * **Đánh giá Trang Vàng Việt Nam:**
   * ToS quy định bản quyền cơ sở dữ liệu thuộc Vietnam Yellow Pages JSC. Việc cào dữ liệu tự động phục vụ thương mại bị hạn chế.
-  * Đối với phạm vi MVP 5 ngày chạy cục bộ để demo năng lực kỹ thuật (Proof of Concept) với quy mô nhỏ (15–20 records/chiến dịch), rủi ro tranh chấp thực tế là thấp. Tuy nhiên, **TechLead bắt buộc phải ký duyệt chấp thuận rủi ro ToS này**.
+  * Đối với phạm vi MVP chạy cục bộ để kiểm chứng năng lực kỹ thuật (Proof of Concept) với quy mô nhỏ (15–20 records/chiến dịch), rủi ro tranh chấp thực tế là thấp. Tuy nhiên, **TechLead bắt buộc phải ký duyệt chấp thuận rủi ro ToS này**.
 * **Đánh giá các Cổng Dữ liệu Mở Địa phương (TP.HCM, Đà Nẵng):**
-  * Cung cấp theo Nghị định 47/2020/NĐ-CP về dữ liệu mở. Tuy nhiên, độ phủ chỉ mang tính cục bộ từng địa phương, không đáp ứng được bài toán toàn quốc nếu không tích hợp nhiều cổng cùng lúc (vượt quá thời gian 5 ngày).
+  * Cung cấp theo Nghị định 47/2020/NĐ-CP về dữ liệu mở. Tuy nhiên, độ phủ chỉ mang tính cục bộ từng địa phương, không đáp ứng được bài toán toàn quốc nếu không tích hợp nhiều cổng cùng lúc (làm tăng đáng kể độ phức tạp tích hợp đa API).
 
 ### 8.2 Tuân thủ Quy định Bảo vệ Dữ liệu Cá nhân (Nghị định 13/2023/NĐ-CP)
 * Toàn bộ dữ liệu thu thập chỉ phục vụ mục đích thông tin danh bạ doanh nghiệp B2B công khai.
@@ -315,15 +312,15 @@ flowchart TD
 
 ---
 
-## 9. Expected Implementation Effort & 5-Day Feasibility (Ước tính Công sức & Khả thi 5 Ngày)
+## 9. Expected Implementation Effort & Technical Feasibility (Ước tính Công sức & Khả thi Kỹ thuật)
 
-Dựa trên Kế hoạch bàn giao 5 ngày tại PRD, công việc thu thập dữ liệu (Collector) được thực hiện trọn vẹn trong **Ngày 2**:
+Đánh giá công sức triển khai và mức độ khả thi kỹ thuật cho các phương án nguồn dữ liệu:
 
-| Phương án Nguồn | Khối lượng Công việc Kỹ thuật Ngày 2 | Thời gian Ước tính | Mức độ Khả thi trong 5 Ngày |
-| :--- | :--- | :---: | :---: |
-| **Phương án 1: Trang Vàng duy nhất (Toàn quốc + Đà Nẵng cho cả 2 ngành)** | Viết 1 HTTP Scraper duy nhất cho `trangvangvietnam.com` với khả năng truyền tham số ngành và tỉnh thành (Đà Nẵng / Toàn quốc). Cài đặt Crawl-delay 5s. | **6 – 7 giờ** (0.8 ngày) | **RẤT CAO**<br>*(Tối ưu hóa tối đa thời gian code, 1 developer hoàn thành tốt trong Ngày 2)* |
-| **Phương án 2: Đa nguồn (VASI cho Sản xuất + Trang Vàng cho Giáo dục)** | Viết 2 Scraper riêng biệt: VASI (17 tỉnh, thiếu Đà Nẵng) + Trang Vàng (Giáo dục toàn quốc). Phải viết thêm adapter bổ sung nguồn Đà Nẵng cho sản xuất. | **10 – 12 giờ** (1.3 ngày) | **RỦI RO CAO**<br>*(Dễ trễ tiến độ Ngày 2 do phải tích hợp 2-3 nguồn khác nhau)* |
-| **Phương án 3: Chờ tích hợp API Dữ liệu Mở Đà Nẵng + TP.HCM** | Phải nghiên cứu 2 bộ API riêng biệt của 2 thành phố; không giải quyết được các tỉnh thành còn lại trên toàn quốc. | **Không xác định** | **KHÔNG KHẢ THI**<br>*(Không đáp ứng phạm vi toàn quốc trong 5 ngày)* |
+| Phương án Nguồn | Khối lượng Công việc Kỹ thuật | Độ Phức Tạp Kỹ Thuật | Mức độ Khả thi & Khuyến nghị |
+| :--- | :--- | :---: | :--- |
+| **Phương án 1: Trang Vàng duy nhất (Toàn quốc + Đà Nẵng cho cả 2 ngành)** | Viết 1 HTTP Scraper duy nhất cho `trangvangvietnam.com` với khả năng truyền tham số ngành và tỉnh thành (Đà Nẵng / Toàn quốc). Cài đặt Crawl-delay 5s. | **Trung bình thấp** | **KHUYẾN NGHỊ SỐ 1**<br>*(Tối ưu hóa kiến trúc pipeline dùng chung, bao phủ toàn quốc và Đà Nẵng)* |
+| **Phương án 2: Đa nguồn (VASI cho Sản xuất + Trang Vàng cho Giáo dục)** | Viết 2 Scraper riêng biệt: VASI (17 tỉnh, thiếu Đà Nẵng) + Trang Vàng (Giáo dục toàn quốc). Phải viết thêm adapter bổ sung nguồn Đà Nẵng cho sản xuất. | **Trung bình cao** | **PHƯƠNG ÁN DỰ PHÒNG**<br>*(Tốn công sức tích hợp đa nguồn, phức tạp hóa logic điều hướng)* |
+| **Phương án 3: Chờ tích hợp API Dữ liệu Mở Đà Nẵng + TP.HCM** | Phải nghiên cứu 2 bộ API riêng biệt của 2 thành phố; không giải quyết được các tỉnh thành còn lại trên toàn quốc. | **Cao** | **KHÔNG KHUYẾN NGHỊ CHO GIAI ĐOẠN ĐẦU**<br>*(Không đáp ứng phạm vi toàn quốc, chỉ dùng bổ sung sau)* |
 
 ---
 
@@ -336,7 +333,7 @@ Dựa trên yêu cầu bắt buộc mới: **Phạm vi Toàn quốc Việt Nam v
 * **Độ phủ Địa lý:** **Toàn quốc (63 tỉnh/thành phố), ĐÃ XÁC MINH CÓ DỮ LIỆU ĐÀ NẴNG**.
 * **Cơ chế Lọc Địa lý:** Hỗ trợ lọc trực tiếp qua tham số tìm kiếm kết hợp kiểm tra địa chỉ tại pipeline; cho phép người dùng chọn **"Đà Nẵng"**, bất kỳ tỉnh thành nào, hoặc chọn **"Toàn quốc"**.
 * **Lý do khuyến nghị hàng đầu:**
-  1. *Khả thi trong 5 ngày:* Là nguồn duy nhất đã kiểm chứng bao quát trọn vẹn cả 2 ngành trên phạm vi toàn quốc và có Đà Nẵng; Developer chỉ cần viết **01 Collector Engine duy nhất** trong Ngày 2.
+  1. *Khả thi cao:* Là nguồn duy nhất đã kiểm chứng bao quát trọn vẹn cả 2 ngành trên phạm vi toàn quốc và có Đà Nẵng; Developer chỉ cần viết **01 Collector Engine duy nhất** cho cả hai ngành.
   2. *Chất lượng dữ liệu:* Tỷ lệ có số điện thoại và website đạt 80%–100% trong mẫu khảo sát; có URL trang chi tiết riêng để truy vết nguồn gốc.
   3. *Tuân thủ kỹ thuật:* Cài đặt đúng `Crawl-delay: 5` của robots.txt để không gây tải cho máy chủ.
 * **Quyết định cần TechLead phê duyệt:** Chấp thuận rủi ro ToS của Trang Vàng cho phạm vi thử nghiệm nội bộ 15–20 records/chiến dịch.
@@ -346,7 +343,7 @@ Dựa trên yêu cầu bắt buộc mới: **Phạm vi Toàn quốc Việt Nam v
 ### ĐỀ XUẤT 2: PHƯƠNG ÁN NGUỒN KẾT HỢP VỚI GIỚI HẠN MINH BẠCH (ALTERNATIVE OPTION 2)
 * **Ngành Giáo dục:** Sử dụng **Trang Vàng Việt Nam** (đảm bảo Toàn quốc & Đà Nẵng).
 * **Ngành Sản xuất:** Sử dụng **VASI (`vasi.org.vn`)** cho các tỉnh công nghiệp lớn (Hà Nội, TP.HCM, Đồng Nai, Bắc Ninh...) VÀ kết hợp **Trang Vàng** khi người dùng chọn lọc **Đà Nẵng**.
-* **Đánh giá:** Phương án này tận dụng được chất lượng dữ liệu chi tiết của VASI, nhưng Developer phải viết 2 Scraper khác nhau và xử lý logic điều hướng nguồn phức tạp hơn trong Ngày 2.
+* **Đánh giá:** Phương án này tận dụng được chất lượng dữ liệu chi tiết của VASI, nhưng Developer phải viết 2 Scraper khác nhau và xử lý logic điều hướng nguồn phức tạp hơn trong giai đoạn đầu.
 
 ---
 
@@ -355,7 +352,7 @@ Dựa trên yêu cầu bắt buộc mới: **Phạm vi Toàn quốc Việt Nam v
 Kế hoạch dự phòng được cập nhật để phản ánh đúng yêu cầu toàn quốc và dữ liệu tại Đà Nẵng:
 
 ### 11.1 Mốc Thời gian Kích hoạt (Trigger Deadline)
-* **Thời hạn chót (Hard Deadline):** **12:00 trưa Ngày 2 (14/10/2026)**.
+* **Quy tắc Kích hoạt Chế độ Thực thi:** Mặc định hệ thống vận hành ở **Fixture Mode** cho đến khi có văn bản phê duyệt chính thức cho nguồn LIVE.
 * Nếu đến thời điểm này TechLead chưa thể ký duyệt nguồn trực tiếp, Developer sẽ **ngừng chờ đợi** và chuyển trạng thái sang **Chế độ Dữ liệu Mẫu (Fallback Fixture Mode)**.
 
 ### 11.2 Cấu trúc Bộ Dữ liệu Mẫu Giả lập Đa Vùng Miền (Synthetic Multi-Province Fixtures)
@@ -376,11 +373,11 @@ Nhằm đảm bảo an toàn 100% về bản quyền và không phát sinh rủi
 
 ## 12. Open Questions and Approval Checklist (Câu hỏi Mở & Bảng Ký Duyệt)
 
-### 12.1 Câu hỏi Cần TechLead Trả lời Ngay
-1. **[Q-01] Về Phạm vi Toàn quốc & Đà Nẵng:** TechLead xác nhận phạm vi bắt buộc là Toàn quốc và phải có Đà Nẵng; TechLead có phê duyệt **Đề xuất 1 (Trang Vàng Doanh Nghiệp cho cả 2 ngành)** để đảm bảo hoàn thành trong 5 ngày không?
+### 12.1 Câu hỏi Cần TechLead Xem xét và Phê duyệt
+1. **[Q-01] Về Phạm vi Toàn quốc & Đà Nẵng:** TechLead xác nhận phạm vi bắt buộc là Toàn quốc và phải có Đà Nẵng; TechLead có phê duyệt **Đề xuất 1 (Trang Vàng Doanh Nghiệp cho cả 2 ngành)** để tối ưu hóa kiến trúc pipeline dùng chung không?
 2. **[Q-02] Về Bộ lọc Tỉnh/Thành trên UI:** Bộ lọc tỉnh/thành có bắt buộc phải hiển thị dạng dropdown trên giao diện cấu hình chiến dịch của bản demo MVP không (cho phép chọn: "Toàn quốc", "Đà Nẵng", "Hà Nội", "Hồ Chí Minh"...)?
 3. **[Q-03] Về Nguồn VASI:** TechLead có chấp nhận việc VASI bị thiếu Đà Nẵng (chỉ có 17 tỉnh) hay yêu cầu dùng nguồn toàn quốc có Đà Nẵng cho ngành Sản xuất?
-4. **[Q-04] Về Kế hoạch Dự phòng:** TechLead có phê duyệt cơ chế kích hoạt Synthetic Multi-Province Fixture (bao gồm Đà Nẵng) vào 12:00 trưa Ngày 2 nếu nguồn live chưa được duyệt không?
+4. **[Q-04] Về Kế hoạch Dự phòng:** TechLead có phê duyệt cơ chế kích hoạt Synthetic Multi-Province Fixture (bao gồm Đà Nẵng) cho chế độ Fixture Mode nếu nguồn live chưa được duyệt không?
 
 ---
 
@@ -391,8 +388,8 @@ Nhằm đảm bảo an toàn 100% về bản quyền và không phát sinh rủi
 | **Phương án Toàn quốc & Đà Nẵng (Khuyến nghị số 1)** | **Trang Vàng Việt Nam (`trangvangvietnam.com`)**<br/>*(Bao phủ Toàn quốc & Có Đà Nẵng cho cả 2 ngành)* | [ ] Phê duyệt Phương án 1 (Khuyên dùng)<br>[ ] Không phê duyệt | _(Chờ ký duyệt)_ |
 | **Nguồn Ngành Sản xuất Chuyên biệt (VASI)** | **VASI (`vasi.org.vn`)**<br/>*(Lưu ý: Chỉ có 17 tỉnh, KHÔNG có Đà Nẵng)* | [ ] Chỉ dùng cho 17 tỉnh (Không lọc Đà Nẵng)<br>[ ] Không dùng cho MVP toàn quốc | _(Chờ ký duyệt)_ |
 | **Bộ lọc Tỉnh/Thành trên Giao diện** | **Hỗ trợ chọn "Toàn quốc" hoặc Tỉnh cụ thể (Đà Nẵng...)** | [ ] Bắt buộc có trên UI Demo<br>[ ] Cho phép cấu hình qua tham số config | _(Chờ ký duyệt)_ |
-| **Kế hoạch Dự phòng (Fallback Plan)** | **Synthetic Fixtures Đa vùng miền (bao gồm Đà Nẵng)** | [ ] Phê duyệt tự động kích hoạt lúc 12:00 Ngày 2<br>[ ] Chờ chỉ đạo thêm | _(Chờ ký duyệt)_ |
+| **Kế hoạch Dự phòng (Fallback Plan)** | **Synthetic Fixtures Đa vùng miền (bao gồm Đà Nẵng)** | [ ] Phê duyệt kích hoạt ở Fixture Mode khi chưa có Live Source<br>[ ] Chờ chỉ đạo thêm | _(Chờ ký duyệt)_ |
 
 ---
 
-*Tài liệu được cập nhật toàn diện phản ánh đúng yêu cầu Toàn quốc Việt Nam và Thành phố Đà Nẵng. Kính trình TechLead xem xét và cho ý kiến chỉ đạo trước 09:00 sáng Ngày 2.*
+*Tài liệu được cập nhật toàn diện phản ánh đúng yêu cầu Toàn quốc Việt Nam và Thành phố Đà Nẵng. Kính trình TechLead xem xét và cho ý kiến chỉ đạo trước khi triển khai Live Mode.*
