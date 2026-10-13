@@ -35,3 +35,8 @@ env/
 logs/
 *.log
 npm-debug.log*
+
+# Exports & Test Artifacts
+exports/
+*.xlsx
+.pytest_cache/
