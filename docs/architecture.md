@@ -6,7 +6,7 @@
 ## 1. Mục tiêu và Phạm vi Kiến trúc (Architecture Goals and Scope)
 
 ### 1.1 Mục tiêu Kiến trúc
-Tài liệu này xác lập thiết kế kiến trúc kỹ thuật chi tiết cho dự án **AI RPA Lead Collector MVP**. Thiết kế được tối ưu hóa cho mục tiêu phát triển và chuyển giao trong **05 ngày làm việc (5 working days)** bởi **01 lập trình viên độc lập (Sole Developer)**, vận hành trên môi trường máy tính cá nhân (**Local PoC/Demo**).
+Tài liệu này xác lập thiết kế kiến trúc kỹ thuật chi tiết cho dự án **AI RPA Lead Collector MVP**. Thiết kế được tối ưu hóa cho mục tiêu phát triển bản **MVP Cốt lõi (Phase 1: Local Foundation & Core Pipeline)** bởi **01 lập trình viên độc lập (Sole Developer)**, vận hành trên môi trường máy tính cá nhân (**Local PoC/Demo**), đồng thời sẵn sàng mở rộng phân kỳ theo kiến trúc mục tiêu.
 
 Mục tiêu cốt lõi của kiến trúc:
 1. **Kiến trúc Tối giản & Đúng hạn (Pragmatic & Delivery-Focused):** Loại bỏ toàn bộ sự phức tạp không cần thiết (không microservices, không database server, không hàng đợi Celery/Redis, không framework multi-agent phức tạp).
@@ -37,7 +37,7 @@ Mục tiêu cốt lõi của kiến trúc:
 ## 2. Bối cảnh Dự án và Các Ràng buộc (Project Context & Constraints)
 
 ### 2.1 Bối cảnh Triển khai
-* **Nhân sự & Thời gian:** 01 developer chịu trách nhiệm độc lập từ khâu kiến trúc, lập trình backend, giao diện frontend đến kiểm thử E2E trong vòng 5 ngày làm việc.
+* **Nhân sự & Phạm vi:** 01 developer chịu trách nhiệm độc lập từ khâu kiến trúc, lập trình backend, giao diện frontend đến kiểm thử E2E trong giai đoạn nền tảng (Phase 1).
 * **Môi trường vận hành:** Ứng dụng chạy trên máy trạm cá nhân tiêu chuẩn của người dùng (Windows/macOS/Linux, tối thiểu 8GB RAM, không yêu cầu GPU).
 * **Nguồn dữ liệu:** Nguồn dữ liệu trực tiếp **chưa có phê duyệt chính thức từ TechLead**. Các nguồn ứng viên khảo sát (Trang Vàng, VASI, Cổng dữ liệu mở) có độ phủ địa lý và điều khoản pháp lý khác nhau. Do đó, hệ thống mặc định vận hành ở **Fixture Mode** để đảm bảo khả năng chạy thử và demo độc lập hoàn toàn với Internet.
 * **LLM API:** Công ty cấp thông số kết nối qua biến môi trường; kiến trúc phải xử lý an toàn các rủi ro mạng, timeout, rate limit (HTTP 429), cạn quota và sai lệch định dạng JSON từ model.
@@ -50,7 +50,7 @@ Mục tiêu cốt lõi của kiến trúc:
 | **CON-03: Khóa Bí mật & Bảo mật** | Tuyệt đối không hard-code API Key, endpoint hoặc token trong code hay frontend. | Toàn bộ cấu hình nhạy cảm nạp qua file `.env`; frontend chỉ giao tiếp qua API proxy nội bộ. |
 | **CON-04: Giới hạn Thu thập Từng Nguồn** | Tôn trọng `robots.txt`, ToS và áp dụng thời gian chờ (delay) riêng biệt theo từng nguồn đã duyệt. | Module Collector áp dụng chính sách cấu hình theo từng nguồn (per-source rate limiter). Tuyệt đối không áp đặt một mức delay cố định chung cho mọi website. |
 | **CON-05: Ràng buộc Địa lý Có Phiên bản** | Hỗ trợ phạm vi Toàn quốc hoặc một tỉnh/thành cụ thể; bắt buộc hỗ trợ và kiểm thử Đà Nẵng. | Module Geographic Normalizer độc lập logic, chuẩn hóa theo bộ dữ liệu địa lý có phiên bản (`version`, `source_reference`, `last_updated`); khuyết thiếu hoặc không đủ căn cứ gán `null`, không đoán mò. |
-| **CON-06: Ngân sách Thời gian** | 5 ngày triển khai: Ngày 1 (Kiến trúc & Setup) → Ngày 2 (Collector & Fixture) → Ngày 3 (LLM & Validator) → Ngày 4 (UI & Excel) → Ngày 5 (Test & Demo). | Thiết kế phẳng, ít tầng gián tiếp (low indirection), tái sử dụng thư viện chuẩn (`openpyxl`, `httpx`, `pydantic`). |
+| **CON-06: Kiến trúc Phân kỳ (Phased Evolution)** | Triển khai theo các Phase kỹ thuật có thứ tự: Phase 1 (Monolith MVP) → Phase 2 (Live Sources) → Phase 3 (Postgres) → Phase 4 (Redis & Worker) → Phase 5 (AI Engine). | Thiết kế phẳng, phân định ranh giới module rõ ràng, trừu tượng hóa Repository và Dispatcher để chuyển đổi mà không viết lại nghiệp vụ. |
 
 ---
 
@@ -60,7 +60,7 @@ Tài liệu phân định minh bạch các quyết định theo 3 trạng thái 
 
 | Mã ADR | Chủ đề Quyết định | Trạng thái | Nội dung Quyết định & Cơ sở Kỹ thuật |
 | :---: | :--- | :---: | :--- |
-| **ADR-01** | **Shared Processing Pipeline** | `[CONFIRMED]` | Sử dụng **01 Shared Pipeline duy nhất** cho cả 2 ngành Education và Manufacturing. Sự khác biệt chỉ nằm ở tham số cấu hình (`industry`, prompt template ngữ cảnh, danh mục từ khóa). Tránh nhân đôi mã nguồn và giảm tải bảo trì trong 5 ngày. |
+| **ADR-01** | **Shared Processing Pipeline** | `[CONFIRMED]` | Sử dụng **01 Shared Pipeline duy nhất** cho cả 2 ngành Education và Manufacturing. Sự khác biệt chỉ nằm ở tham số cấu hình (`industry`, prompt template ngữ cảnh, danh mục từ khóa). Tránh nhân đôi mã nguồn và giảm tải chi phí bảo trì. |
 | **ADR-02** | **Backend Framework & Runtime** | `[CONFIRMED]` | Sử dụng **FastAPI** làm nền tảng backend chính. FastAPI cung cấp khả năng tự động sinh tài liệu Swagger UI, xác thực dữ liệu qua Pydantic v2 mạnh mẽ, và xử lý tác vụ nền (`BackgroundTasks`) dễ dàng trên môi trường local. |
 | **ADR-03** | **Công nghệ Frontend Local** | `[CONFIRMED]` | Lựa chọn kiến trúc Single-Page Application (SPA) xây dựng bằng **React 18+ kết hợp TypeScript và Vite** (đặt tại thư mục `web/` hoặc `frontend/`). Quản lý state cục bộ bằng React hooks (`useState`, `useEffect`); styling bằng Tailwind CSS bundled tĩnh (không dùng CDN công cộng để đảm bảo chạy ngoại tuyến 100%); giao tiếp backend qua HTTP REST Polling định kỳ (1.5s – 2.0s). Phương án fallback HTML5/Vanilla JS tĩnh được lưu giữ làm tùy chọn dự phòng nếu cần chạy trực tiếp từ FastAPI mà không qua bước build npm. |
 | **ADR-04** | **Vị trí của Geographic Normalizer** | `[PROPOSED]` | Tích hợp **Geographic Normalizer như một thành phần chuyên trách (Dedicated Sub-component)** nằm trong Module Validation (`backend/src/app/validation/geo_normalizer.py`), không tách thành Microservice riêng. Giữ nguyên ranh giới pure functions để kiểm thử độc lập mà không tăng chi phí điều phối. |
@@ -77,7 +77,7 @@ Tài liệu phân định minh bạch các quyết định theo 3 trạng thái 
 
 ## 4. Tổng quan Kiến trúc Hệ thống (System Architecture Overview)
 
-Hệ thống được thiết kế theo phong cách kiến trúc **Modular Monolith (Đơn khối Mô-đun hóa)** tại `backend/`, kết hợp giao diện người dùng Single-Page Application (SPA) tại `web/`. Kiến trúc phân định ranh giới trách nhiệm mạch lạc, độc lập kiểm thử và sẵn sàng cho 01 lập trình viên triển khai trong 5 ngày làm việc mà không cần cài đặt các hạ tầng phân tán phức tạp:
+Hệ thống được thiết kế theo phong cách kiến trúc **Modular Monolith (Đơn khối Mô-đun hóa)** tại `backend/`, kết hợp giao diện người dùng Single-Page Application (SPA) tại `web/`. Kiến trúc thiết lập ranh giới module mạch lạc, độc lập kiểm thử và có khả năng tiến hóa phân kỳ: trong giai đoạn đầu (Phase 1), toàn bộ logic backend và pipeline chạy trong cùng một tiến trình (in-process); khi mở rộng ở các giai đoạn sau, các module có thể được tách thành các dịch vụ độc lập (`rpa-worker/`, `ai-engine/`) thông qua hàng đợi Redis và cơ sở dữ liệu PostgreSQL mà không làm xáo trộn logic nghiệp vụ cốt lõi:
 
 1. **Tầng Trình diễn (Presentation Layer - `web/`):**
    * Xây dựng bằng **React 18+ kết hợp TypeScript, Vite và Tailwind CSS**, giao tiếp với Backend qua RESTful API tiêu chuẩn (JSON).
@@ -200,7 +200,7 @@ graph TD
 
 ## 6. Danh sách Module và Trách nhiệm (Modules and Responsibilities)
 
-Để đảm bảo kỷ luật tiến độ 5 ngày cho 1 lập trình viên, hệ thống được cấu trúc thành **8 module kỹ thuật trọng tâm**:
+Hệ thống được cấu trúc thành **các module kỹ thuật trọng tâm** với ranh giới trách nhiệm rõ ràng:
 
 ### 6.1. Module Frontend (`web/` hoặc `frontend/`)
 
@@ -210,7 +210,7 @@ graph TD
     * Runtime & Framework: React 18+ với TypeScript (chế độ strict).
     * Build Tool: Vite (khởi động nhanh, hỗ trợ dev server proxy).
     * Styling: Tailwind CSS được cấu hình build tĩnh nội bộ (bundled CSS) hoặc tệp CSS cục bộ (`src/styles/index.css`), **tuyệt đối không sử dụng Tailwind CDN (`cdn.tailwindcss.com`)** để đảm bảo ứng dụng hiển thị hoàn hảo 100% khi demo ngoại tuyến (offline).
-    * Quản lý State: React built-in hooks (`useState`, `useEffect`, `useCallback`, `useRef`). Tuyệt đối không cài đặt Redux, MobX hay Zustand để tránh over-engineering trong 5 ngày.
+    * Quản lý State: React built-in hooks (`useState`, `useEffect`, `useCallback`, `useRef`). Tuyệt đối không cài đặt Redux, MobX hay Zustand để tránh over-engineering trong giai đoạn đầu.
     * HTTP Client: Native Fetch API wrapper hoặc Axios có hỗ trợ `AbortController` và xử lý timeout.
   * **Công nghệ Tùy chọn / Fallback (Optional):**
     * Thư viện Icon: Lucide-React tối giản hoặc nhúng trực tiếp SVG nội bộ.
@@ -482,7 +482,7 @@ Hệ thống thiết lập 10 nhóm kiểm thử tối thiểu để nghiệm th
 
 #### 6.1.7. Giới hạn Phạm vi Frontend trong MVP (Out of Scope for Frontend MVP)
 
-Để bảo đảm bàn giao đúng hạn trong 5 ngày, các tính năng sau **nằm ngoài phạm vi của Frontend MVP**:
+Các tính năng sau **nằm ngoài phạm vi của Frontend MVP (Phase 1)**:
 * Không xây dựng màn hình Đăng nhập, Đăng ký hay Quản trị phân quyền (Auth / RBAC).
 * Không cài đặt framework quản lý state toàn cục (Redux, MobX, Zustand).
 * Không tích hợp giao thức WebSocket hoặc Server-Sent Events (SSE).
@@ -716,10 +716,10 @@ Trong cấu trúc tổng thể của kho lưu trữ monorepo (`D:\rpa-project\`)
 > [!IMPORTANT]
 > **Lưu ý Quan trọng về Hiện trạng và Nguyên tắc Triển khai:**
 > * Cấu trúc dưới đây là **cấu trúc đích khuyến nghị (Recommended Target Structure)** nhằm định hướng triển khai chuẩn mực cho kiến trúc Modular Monolith, **hoàn toàn không tuyên bố rằng mọi tệp tin đã tồn tại sẵn trong repository** (hiện tại thư mục `backend/` trong kho lưu trữ mới chỉ có tệp giữ chỗ `.gitkeep`).
-> * Các tệp tin và thư mục sẽ được lập trình viên **khởi tạo theo phương thức tiệm tiến (Incremental Creation)** tương ứng với từng ngày trong kế hoạch 5 ngày khi triển khai các trách nhiệm cụ thể.
+> * Các tệp tin và thư mục sẽ được lập trình viên **khởi tạo theo phương thức tiệm tiến (Incremental Creation)** tương ứng với từng Phase trong lộ trình kỹ thuật.
 > * **Tuyệt đối không ép buộc tạo các tệp hoặc thư mục rỗng** khi chưa phát triển chức năng tương ứng, tránh gây nhiễu mã nguồn trong giai đoạn MVP.
 > * `models/` đóng vai trò là **Domain Models / Typed Business Objects** đại diện cho miền nghiệp vụ, **không giả định hay cài đặt bất kỳ ORM hoặc hệ cơ sở dữ liệu** nào cho MVP.
-> * `repositories/` đóng vai trò là **Lớp trừu tượng truy cập dữ liệu (Data Access Abstraction)**, cho phép cài đặt lưu trữ bộ nhớ RAM (`InMemoryCampaignRepository`) phục vụ demo cục bộ 5 ngày, đồng thời tạo tiền đề chuyển đổi sang PostgreSQL bền vững trong tương lai mà không phải sửa đổi mã nguồn pipeline.
+> * `repositories/` đóng vai trò là **Lớp trừu tượng truy cập dữ liệu (Data Access Abstraction)**, cho phép cài đặt lưu trữ bộ nhớ RAM (`InMemoryCampaignRepository`) phục vụ Phase 1, đồng thời tạo tiền đề chuyển đổi sang PostgreSQL bền vững ở Phase 3 mà không phải sửa đổi mã nguồn pipeline.
 
 ```text
 backend/
@@ -920,7 +920,7 @@ sequenceDiagram
 
 ### 10.3 Cơ chế Thực thi MVP & Đánh giá Giới hạn của `FastAPI BackgroundTasks`
 
-Đối với phiên bản MVP cục bộ bàn giao trong 5 ngày cho 01 người dùng, hệ thống sử dụng **`fastapi.BackgroundTasks`** làm cơ chế lập lịch tác vụ nền.
+Đối với phiên bản MVP cục bộ giai đoạn đầu (Phase 1) cho 01 người dùng, hệ thống sử dụng **`fastapi.BackgroundTasks`** làm cơ chế lập lịch tác vụ nền in-process mặc định.
 
 #### Các Giới hạn Kỹ thuật Cốt lõi của `BackgroundTasks`:
 1. **Không phải Hàng đợi Tác vụ Bền vững (Not a Durable Job Queue):** `BackgroundTasks` được quản lý trực tiếp bởi Starlette/FastAPI trên event loop / thread pool của tiến trình ứng dụng. Nó không có cơ chế ghi nhận job ra ổ đĩa hay broker trung gian.
@@ -1073,7 +1073,7 @@ Nhằm bảo đảm nguyên tắc thu thập lịch sự (Polite Crawling) và k
 
 ### 12.1 Cơ sở Lựa chọn Công nghệ Backend (Backend Technology Stack Rationale)
 
-Toàn bộ ngăn xếp công nghệ backend được lựa chọn bám sát mục tiêu thực dụng: triển khai trong 5 ngày làm việc bởi 01 lập trình viên, vận hành ổn định trên máy trạm cá nhân, không phát sinh chi phí hạ tầng hay phụ thuộc dịch vụ bên ngoài phức tạp:
+Toàn bộ ngăn xếp công nghệ backend được lựa chọn bám sát mục tiêu thực dụng: triển khai trong giai đoạn nền tảng (Phase 1) bởi 01 lập trình viên, vận hành ổn định trên máy trạm cá nhân, không phát sinh chi phí hạ tầng hay phụ thuộc dịch vụ bên ngoài phức tạp:
 
 | Công nghệ | Vai trò trong Hệ thống | Lý do Lựa chọn & Ranh giới Kỹ thuật |
 | :--- | :--- | :--- |
@@ -1091,13 +1091,13 @@ Toàn bộ ngăn xếp công nghệ backend được lựa chọn bám sát mụ
 
 > [!IMPORTANT]
 > **Cam kết Không Đưa Thư viện Dư thừa vào MVP:**
-> Kiến trúc MVP **tuyệt đối không cài đặt mặc định** LangChain, LlamaIndex, CrewAI, Celery, Redis, Kafka, SQLAlchemy/Alembic hay Kubernetes. Mọi yêu cầu nghiệp vụ của PoC 5 ngày được giải quyết triệt để thông qua các thư viện tiêu chuẩn đã chọn.
+> Kiến trúc MVP **tuyệt đối không cài đặt mặc định** LangChain, LlamaIndex, CrewAI, Celery, Redis, Kafka, SQLAlchemy/Alembic hay Kubernetes. Mọi yêu cầu nghiệp vụ cốt lõi của Phase 1 được giải quyết triệt để thông qua các thư viện tiêu chuẩn đã chọn; việc tích hợp Redis, Celery, Postgres và AI Engine sẽ được triển khai phân kỳ theo lộ trình.
 
 ---
 
 ### 12.2 Chiến lược Lưu trữ Cục bộ & Lộ trình Nâng cấp (Storage Strategy & Upgrade Path)
 
-Hệ thống áp dụng chiến lược lưu trữ không database cho MVP 5 ngày, phân định minh bạch giữa hiện trạng và tương lai:
+Hệ thống áp dụng chiến lược lưu trữ không database cho giai đoạn khởi tạo (Phase 1), phân định minh bạch giữa hiện trạng và tương lai:
 
 1. **Trừu tượng hóa Repository trong Bộ nhớ RAM (`InMemoryCampaignRepository`, `InMemoryLeadRepository`):**
    * Quản lý trạng thái chiến dịch (`CampaignState`) và danh sách lead tạm thời trong bộ nhớ RAM bằng dictionary an toàn luồng (`asyncio.Lock`).
@@ -1256,7 +1256,7 @@ Hệ thống phân định rạch ròi hành vi và trách nhiệm pháp lý gi�
 
 ## 14. Chiến lược Kiểm thử Backend (Backend Testing Strategy)
 
-Nhằm bảo đảm chất lượng chuyển giao trong 5 ngày mà không phụ thuộc vào hạ tầng cloud hay chi phí API bên ngoài, hệ thống thiết lập chiến lược kiểm thử tự động đa tầng bằng `pytest`:
+Nhằm bảo đảm chất lượng chuyển giao mà không phụ thuộc vào hạ tầng cloud hay chi phí API bên ngoài, hệ thống thiết lập chiến lược kiểm thử tự động đa tầng bằng `pytest`:
 
 ### 14.1 Các Cấp độ Kiểm thử Bắt buộc
 1. **Unit Tests (Kiểm thử Đơn vị - 100% Offline):**
@@ -1289,7 +1289,7 @@ Nhằm bảo đảm chất lượng chuyển giao trong 5 ngày mà không phụ
 
 Kiến trúc xác lập lộ trình triển khai 3 giai đoạn rõ ràng:
 
-### Giai đoạn 1 — Local MVP (Phục vụ PoC & Demo 5 Ngày)
+### Giai đoạn 1 — Local MVP (Phục vụ PoC & Demo Nền tảng)
 * **Mục tiêu:** Chạy ổn định trên máy trạm cá nhân của người dùng phục vụ buổi nghiệm thu ngày thứ 5.
 * **Môi trường:** Máy trạm Windows/macOS/Linux tiêu chuẩn (>= 8GB RAM, không yêu cầu GPU).
 * **Thành phần vận hành:**
@@ -1320,7 +1320,7 @@ Kiến trúc xác lập lộ trình triển khai 3 giai đoạn rõ ràng:
 
 ## 16. Những Nội dung Nằm ngoài Phạm vi MVP (Out of Scope Architecture)
 
-Để bảo đảm kỷ luật tiến độ 5 ngày cho 1 developer, các hạng mục kiến trúc sau đây được **xác định tường minh là nằm ngoài phạm vi**:
+Để bảo đảm sự tinh gọn và khả thi cho giai đoạn khởi tạo (Phase 1), các hạng mục kiến trúc sau đây được **xác định tường minh là nằm ngoài phạm vi Phase 1**:
 
 1. **Hạ tầng Cơ sở Dữ liệu Quan hệ (No Relational DB / ORM):** Không sử dụng PostgreSQL, MySQL, Alembic migrations hay SQLAlchemy ORM trong MVP.
 2. **Hạ tầng Phân tán & Hàng đợi (No Distributed Queues):** Không cài đặt Celery, Redis Broker, RabbitMQ hay Kafka trong MVP.
@@ -1341,20 +1341,20 @@ Bảng dưới đây ghi nhận các quyết định kiến trúc còn bỏ ng�
 
 | Mã Quyết định | Nội dung Quyết định | Hiện trạng & Đề xuất Mặc định của Kiến trúc | Người Cần Xác nhận | Tác động nếu Chưa Chốt |
 | :---: | :--- | :--- | :---: | :--- |
-| **DEC-01** | **Phê duyệt Nguồn Dữ liệu Live Chính thức** | Chưa có nguồn live nào được duyệt trong `docs/source-research.md`. Đề xuất: Hệ thống mặc định chạy **FIXTURE Mode** với dữ liệu mẫu tĩnh đa vùng miền (có Đà Nẵng). | TechLead | Developer tiếp tục dùng bộ fixture tĩnh tại `data/fixtures/`; buổi demo Day 5 trình diễn trên dữ liệu mẫu có gắn nhãn rõ ràng. |
+| **DEC-01** | **Phê duyệt Nguồn Dữ liệu Live Chính thức** | Chưa có nguồn live nào được duyệt trong `docs/source-research.md`. Đề xuất: Hệ thống mặc định chạy **FIXTURE Mode** với dữ liệu mẫu tĩnh đa vùng miền (có Đà Nẵng). | TechLead | Developer tiếp tục dùng bộ fixture tĩnh tại `data/fixtures/`; trình diễn thử nghiệm trên dữ liệu mẫu có gắn nhãn rõ ràng. |
 | **DEC-02** | **Nguồn Tham chiếu Địa lý & Chủ quản Cập nhật** | Thiết kế bộ dữ liệu địa lý có phiên bản `data/provinces_reference.json` (version 2026.1, GSO reference). Cần xác định quy trình và vai trò chịu trách nhiệm cập nhật danh mục khi địa giới hành chính thay đổi. | TechLead / BA | Tạm thời sử dụng danh mục tham chiếu GSO 2026.1 kèm bảng aliases; có thể cập nhật file JSON mà không phải sửa code. |
-| **DEC-03** | **Yêu cầu Bền vững Dữ liệu Chiến dịch (Persistence Across Restarts)** | MVP chấp nhận mất trạng thái chiến dịch trong RAM khi backend khởi động lại (file Excel trên đĩa vẫn còn). Cần xác nhận xem có bắt buộc lưu lịch sử chiến dịch vào SQLite/PostgreSQL ngay trong MVP không. | TechLead | Nếu yêu cầu lưu bền vững ngay trong 5 ngày, sẽ phát sinh thêm công việc setup SQLite/migrations, làm tăng rủi ro tiến độ. |
+| **DEC-03** | **Yêu cầu Bền vững Dữ liệu Chiến dịch (Persistence Across Restarts)** | MVP chấp nhận mất trạng thái chiến dịch trong RAM khi backend khởi động lại (file Excel trên đĩa vẫn còn). Cần xác nhận xem có bắt buộc lưu lịch sử chiến dịch vào SQLite/PostgreSQL ngay trong MVP không. | TechLead | Nếu yêu cầu lưu bền vững ngay trong Phase 1, sẽ phát sinh thêm công việc setup cơ sở dữ liệu/migrations; khuyến nghị thực hiện ở Phase 3. |
 | **DEC-04** | **Hạn mức Số lượng Bản ghi Chiến dịch (`max_records`) & Concurrency** | Đề xuất giá trị mặc định `max_records = 20` và trần tối đa `50 bản ghi` cho mỗi lần chạy demo. Chỉ hỗ trợ 01 chiến dịch chạy tại một thời điểm (Single Campaign Concurrency). | TechLead / PO | Nếu tăng hạn mức hoặc yêu cầu đa chiến dịch đồng thời, thời gian xử lý demo sẽ kéo dài và cần bổ sung khóa hàng đợi. |
 | **DEC-05** | **Chính sách Timeout & Giãn cách Thu thập theo Từng Nguồn** | Đề xuất timeout kết nối 10s, đọc 30s; độ trễ Trang Vàng 5.0s (theo robots.txt), các nguồn khác 1.5s–3.0s; tối đa 2 lần retry cho lỗi mạng tạm thời. | TechLead | Cần phê duyệt chính thức bảng cấu hình delay cho từng nguồn trước khi kích hoạt Live Mode. |
 | **DEC-06** | **Ngôn ngữ Tiêu đề Hiển thị trong File Excel** | File Excel hỗ trợ tiêu đề theo tiếng Anh chuẩn [`docs/data-dictionary.md`](data-dictionary.md) (`Company Name`, `Industry`...) hoặc ánh xạ tiếng Việt có dấu (`Tên Doanh nghiệp`, `Ngành nghề`...) qua cấu hình mapping. | TechLead / PO | Exporter hỗ trợ cả 2 qua từ điển cấu hình; cần chỉ đạo phương án ưu tiên cho buổi demo. |
 | **DEC-07** | **Mô hình Xác thực của Endpoint Tải File Excel** | Endpoint `GET /api/v1/campaigns/{id}/export` hiện tại không yêu cầu xác thực người dùng (do Auth out-of-scope trong MVP), chỉ kiểm tra tính hợp lệ của `campaign_id` và an toàn đường dẫn file. | TechLead / Sec | Cần xác nhận mô hình tải file mở cục bộ này được chấp thuận cho phạm vi PoC máy cá nhân. |
-| **DEC-08** | **Cơ chế Lập lịch MVP (`FastAPI BackgroundTasks`)** | Chấp thuận sử dụng `BackgroundTasks` cho bản MVP local dù có hạn chế không bền vững, kích hoạt chuyển đổi sang Celery/ARQ khi lên Staging. | TechLead | Nếu TechLead yêu cầu hàng đợi bền vững ngay từ đầu, cần bổ sung tối thiểu 1.5 ngày công để cài đặt Redis và Celery/ARQ. |
+| **DEC-08** | **Cơ chế Lập lịch MVP (`FastAPI BackgroundTasks`)** | Chấp thuận sử dụng `BackgroundTasks` cho bản MVP local dù có hạn chế không bền vững, kích hoạt chuyển đổi sang Celery/ARQ khi lên Staging. | TechLead | Nếu TechLead yêu cầu hàng đợi bền vững ngay từ đầu, cần bổ sung tài nguyên cài đặt Redis và tách Worker; khuyến nghị thực hiện ở Phase 4. |
 
 ---
 
 ## 18. Tiêu chí Đánh giá Kiến trúc Sẵn sàng (Definition of Architectural Readiness)
 
-Tài liệu kiến trúc hệ thống này được xác nhận là **Đạt tiêu chuẩn Sẵn sàng Triển khai (Implementation-Ready)** cho giai đoạn lập trình từ Ngày 2 đến Ngày 5 khi thỏa mãn đầy đủ các điều kiện tiên quyết sau:
+Tài liệu kiến trúc hệ thống này được xác nhận là **Đạt tiêu chuẩn Sẵn sàng Triển khai (Implementation-Ready)** cho giai đoạn lập trình Phase 1 khi thỏa mãn đầy đủ các điều kiện tiên quyết sau:
 
 * [x] **Kiến trúc Modular Monolith Mạch lạc:** Phân định rõ ràng các tầng API, Schemas, Domain Models, Services, Pipeline, Collectors, Extraction, Validation, Deduplication, Exporters, Repositories, Storage, và Core.
 * [x] **Tuân thủ 08 Quy tắc Phụ thuộc Nghiêm ngặt:** API Routes chỉ gọi Services; Services gọi Pipeline và Repositories qua giao diện; Pipeline độc lập với SDK; không có phụ thuộc vòng lặp; Frontend hoàn toàn cách ly với backend internals.
@@ -1369,4 +1369,4 @@ Tài liệu kiến trúc hệ thống này được xác nhận là **Đạt ti�
 
 ---
 
-*Tài liệu được cập nhật và hoàn thiện bởi Senior Backend Engineer & Software Architect. Toàn bộ mã nguồn triển khai từ Ngày 2 đến Ngày 5 phải tuân thủ nghiêm ngặt các ranh giới và quy tắc trong tài liệu kiến trúc này.*
+*Tài liệu được cập nhật và hoàn thiện bởi Senior Backend Engineer & Software Architect. Toàn bộ mã nguồn triển khai từ Phase 1 trở đi phải tuân thủ nghiêm ngặt các ranh giới và quy tắc trong tài liệu kiến trúc này.*

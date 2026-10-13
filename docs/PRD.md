@@ -17,13 +17,14 @@
 ### 1.2 Lịch sử Thay đổi (Revision History)
 | Phiên bản | Ngày | Tác giả | Tóm tắt thay đổi | Trạng thái |
 | :--- | :--- | :--- | :--- | :--- |
-| `1.0-DRAFT` | 12/10/2026 | BA / Architect | Khởi tạo tài liệu PRD hoàn chỉnh cho bản MVP 5 ngày dựa trên định hướng ban đầu | Lưu trữ |
-| `1.2-NATIONWIDE` | 13/10/2026 | BA / Architect | Cập nhật yêu cầu bắt buộc: Phạm vi Toàn quốc Việt Nam (63 tỉnh/thành), hỗ trợ bắt buộc Đà Nẵng, bộ lọc địa phương (Toàn quốc / Tỉnh cụ thể), quy tắc chuẩn hóa trường province và xử lý ô trống khi thiếu dữ liệu; đồng bộ độ phủ địa lý các nguồn từ source-research.md | Chờ phê duyệt |
+| `1.0-DRAFT` | 12/10/2026 | BA / Architect | Khởi tạo tài liệu PRD hoàn chỉnh ban đầu | Lưu trữ |
+| `1.2-NATIONWIDE` | 13/10/2026 | BA / Architect | Cập nhật yêu cầu bắt buộc: Phạm vi Toàn quốc Việt Nam, hỗ trợ bắt buộc Đà Nẵng, bộ lọc địa phương, quy tắc chuẩn hóa trường province | Lưu trữ |
+| `1.3-ALIGNED` | 13/10/2026 | Senior Architect | Loại bỏ toàn bộ ràng buộc deadline ngắn hạn; chuyển đổi kế hoạch ngày thành Lộ trình Phân kỳ (Phased Roadmap); chuẩn hóa Frontend stack thành React + Vite + TypeScript + Tailwind CSS theo Kiến trúc mục tiêu | Chờ phê duyệt |
 
 ### 1.3 Quy ước Phân loại Trạng thái Quyết định
 Tài liệu này phân định nghiêm ngặt ba mức độ trạng thái thông tin:
 1. **[CONFIRMED] - Đã xác nhận:** Các yêu cầu và ràng buộc đã được thống nhất chính thức từ đề bài.
-2. **[PROPOSED] - Đề xuất mặc định:** Các phương án kỹ thuật và nghiệp vụ do BA/Architect đề xuất nhằm đảm bảo tiến độ 5 ngày; có thể áp dụng tạm thời cho đến khi có ý kiến khác.
+2. **[PROPOSED] - Đề xuất mặc định:** Các phương án kỹ thuật và nghiệp vụ do BA/Architect đề xuất cho giai đoạn khởi tạo (Phase 1); có thể áp dụng tạm thời cho đến khi có ý kiến khác.
 3. **[TBD — Pending Approval] - Quyết định chờ phê duyệt:** Các hạng mục bắt buộc phải có văn bản hoặc chỉ đạo phê duyệt chính thức trước khi triển khai hoặc nghiệm thu.
 
 ---
@@ -136,7 +137,7 @@ Trong thời hạn triển khai ngắn, dự án tập trung xây dựng một M
 * *Lưu ý:* Phân loại trên là dự thảo phục vụ prompt ngữ cảnh cho LLM, không phải bảng phân loại cứng đã phê duyệt.
 
 ### 7.3 Kiến trúc Đường ống Dùng chung (Shared Collection Pipeline)
-Để đảm bảo hoàn thành dự án trong 5 ngày, hệ thống **bắt buộc sử dụng chung một pipeline xử lý duy nhất**. Sự khác biệt giữa 2 ngành chỉ nằm ở tầng **tham số cấu hình (Configuration Parameters)**:
+Hệ thống **bắt buộc sử dụng chung một pipeline xử lý duy nhất** cho cả hai ngành Giáo dục và Sản xuất. Sự khác biệt giữa 2 ngành chỉ nằm ở tầng **tham số cấu hình (Configuration Parameters)**:
 
 ```mermaid
 flowchart LR
@@ -148,7 +149,7 @@ flowchart LR
     F --> G["Excel Exporter<br/>(Standard .xlsx Output)"]
 ```
 
-* **Lý do thiết kế:** Cả hai ngành đều chia sẻ chung một lược đồ dữ liệu doanh nghiệp (Tên, Địa chỉ, Website, Email, Phone, Mô tả). Việc phân tách thành 2 pipeline riêng biệt sẽ gây lãng phí công sức, nhân đôi lỗi và không kịp hạn chót 5 ngày.
+* **Lý do thiết kế:** Cả hai ngành đều chia sẻ chung một lược đồ dữ liệu doanh nghiệp (Tên, Địa chỉ, Website, Email, Phone, Mô tả). Việc phân tách thành 2 pipeline riêng biệt sẽ gây trùng lặp mã nguồn, tăng chi phí bảo trì và giảm tính mở rộng của hệ thống.
 
 ---
 
@@ -305,7 +306,7 @@ sequenceDiagram
   * `AC-09.3:` Lưu trữ file log cục bộ (`logs/campaign_{id}.log`) ghi nhận các bước thực thi để phục vụ kiểm tra lỗi.
 
 #### FR-10: Chế độ Kiểm thử Fallback (Fallback Testing Mode)
-* **Độ ưu tiên:** P1 (Should Have - Giảm thiểu rủi ro Day 1-2)
+* **Độ ưu tiên:** P1 (Should Have - Giảm thiểu rủi ro tích hợp ban đầu)
 * **Mô tả:** Cho phép vận hành pipeline với dữ liệu mẫu tĩnh được cấp phép nhằm kiểm thử tính đúng đắn của LLM và Excel Generator khi nguồn web chưa được duyệt.
 * **Acceptance Criteria:**
   * `AC-10.1:` Khi bật chế độ Fallback, hệ thống nạp các file HTML/văn bản mẫu được chuẩn bị sẵn trong thư mục `tests/fixtures/`.
@@ -336,8 +337,8 @@ Developer sử dụng khung 11 tiêu chí sau (đồng bộ với [`docs/source-
 | **7** | **Terms of Service (Điều khoản sử dụng)** | ToS của website có điều khoản cấm automated data collection / extraction không? | Bắt buộc |
 | **8** | **Robots.txt Guidance** | File `/robots.txt` có cho phép truy cập (Disallow/Allow) vào các thư mục danh bạ không? Chỉ thị Crawl-delay? | Bắt buộc |
 | **9** | **Field Completeness (Độ đủ trường)** | Trang có hiển thị đủ: Tên, Địa chỉ, Website, Điện thoại, Email (nếu có), Mô tả không? | Cao |
-| **10**| **Rendering & Anti-Scraping** | Trang sử dụng SSR hay CSR (cần JavaScript)? Có Cloudflare, Datadome hay CAPTCHA khắt khe không? | Rất cao (5 ngày) |
-| **11**| **Implementation Effort (Công sức code)** | Thời gian viết module collector cho nguồn này có khả thi trong vòng 1 ngày (Day 2) cho 1 dev không? | Rất cao |
+| **10**| **Rendering & Anti-Scraping** | Trang sử dụng SSR hay CSR (cần JavaScript)? Có Cloudflare, Datadome hay CAPTCHA khắt khe không? | Rất cao (Phase 1) |
+| **11**| **Implementation Effort (Công sức code)** | Độ phức tạp và công sức viết module collector cho nguồn này có khả thi cho Phase 1 không? | Rất cao |
 
 ### 10.2 Danh sách Nguồn Ứng viên & Giới hạn Độ phủ Địa lý Thực tế
 > [!WARNING]
@@ -360,7 +361,7 @@ Developer sử dụng khung 11 tiêu chí sau (đồng bộ với [`docs/source-
 3. **Thân thiện với Hạ tầng Mục tiêu (Polite Crawling):** Đặt giới hạn tốc độ (Rate Limit), gửi header `User-Agent` minh bạch, áp dụng backoff khi nhận mã HTTP 429 hoặc 503.
 
 ### 10.4 Kế hoạch Dự phòng Khi Phê duyệt Nguồn bị Chậm (Fallback Plan)
-* Nếu hết **12:00 trưa Ngày 2**, TechLead vẫn chưa thể phê duyệt nguồn dữ liệu trực tiếp:
+* Nếu tại thời điểm kích hoạt giai đoạn kiểm thử, nguồn dữ liệu trực tiếp vẫn chưa có văn bản phê duyệt chính thức:
   * Lập trình viên lập tức kích hoạt **Kế hoạch Dự phòng (Fallback Plan)**.
   * Sử dụng một tập dữ liệu mẫu (Sample Dataset / HTML Fixtures) gồm 20–30 trang/bản ghi HTML tĩnh đã được cấp phép nội bộ trong thư mục `tests/fixtures/` để làm đầu vào cho pipeline.
   * **Yêu cầu đối với bộ dữ liệu Fixture:** Bắt buộc phải là bộ dữ liệu đa địa phương, trong đó **bắt buộc có bản ghi tại Đà Nẵng**, bản ghi tại tỉnh/thành khác (Hà Nội hoặc TP.HCM), và ít nhất một bản ghi khuyết thiếu trường `province` để kiểm thử toàn diện cả kịch bản lọc địa phương và chuẩn hóa dữ liệu thiếu.
@@ -545,7 +546,7 @@ flowchart TD
 ## 17. Acceptance Criteria & Test Matrix (Tiêu chí Nghiệm thu)
 
 ### 17.1 Bảng Kiểm Nghiệm thu Chức năng End-to-End (Functional Checklist)
-Quá trình nghiệm thu sản phẩm vào Ngày 5 sẽ được đánh giá dựa trên bảng kiểm sau:
+Quá trình nghiệm thu bản phát hành đầu tiên (Phase 1 MVP) sẽ được đánh giá dựa trên bảng kiểm sau:
 
 | STT | Hạng mục Kiểm tra | Tiêu chuẩn Đạt (Pass Criteria) | Trạng thái Đánh giá |
 | :---: | :--- | :--- | :---: |
@@ -579,94 +580,90 @@ Quá trình nghiệm thu sản phẩm vào Ngày 5 sẽ được đánh giá d�
 
 ---
 
-## 18. Five-Day Delivery Plan (Kế hoạch Triển khai 5 Ngày)
+## 18. Phased Implementation Roadmap (Lộ trình Triển khai Phân kỳ)
 
-Kế hoạch chi tiết dành cho **01 Developer chính** trong điều kiện thời gian nghiêm ngặt 5 ngày:
+Kế hoạch triển khai được tổ chức thành các **Giai đoạn (Phases)** kỹ thuật độc lập với thứ tự ưu tiên, phụ thuộc rõ ràng, deliverables và tiêu chí nghiệm thu cụ thể, loại bỏ các ràng buộc deadline nhân tạo:
 
 ```mermaid
-gantt
-    title Kế hoạch Triển khai 5 Ngày (5-Day Delivery Plan)
-    dateFormat  YYYY-MM-DD
-    section Day 1: Setup & Approval
-    Khoanh vùng Schema & Trình duyệt Nguồn       :a1, 2026-10-13, 1d
-    Khởi tạo Dự án & LLM Abstraction Wrapper    :a2, 2026-10-13, 1d
-    section Day 2: Data Collection
-    Xây dựng Collector Engine (Nguồn duyệt)      :b1, 2026-10-14, 1d
-    Chuẩn bị Fallback Mock Fixtures             :b2, 2026-10-14, 1d
-    section Day 3: LLM & Validation
-    Tích hợp LLM Extraction & Prompt Engineering :c1, 2026-10-15, 1d
-    Bộ chuẩn hóa, Validation & Deduplication    :c2, 2026-10-15, 1d
-    section Day 4: UI & Excel Export
-    Xây dựng Module Xuất Excel (.xlsx)          :d1, 2026-10-16, 1d
-    Ghép nối Giao diện Local & Orchestrator     :d2, 2026-10-16, 1d
-    section Day 5: E2E Test & Demo
-    Kiểm thử E2E cả 2 ngành & Sửa lỗi           :e1, 2026-10-17, 1d
-    Viết README & Báo cáo Demo cho TechLead     :e2, 2026-10-17, 1d
+flowchart TD
+    Phase1["Phase 1: Nền tảng Monolith Cục bộ & Pipeline Dùng chung (MVP Core)<br/>- Modular Monolith Backend (FastAPI)<br/>- Frontend SPA (React + Vite + TS)<br/>- In-Process Shared Pipeline & Fixtures<br/>- In-Memory Repository & Excel Export"]
+    
+    Phase2["Phase 2: Hoàn thiện Nguồn Dữ liệu & Thu thập Trực tiếp (Live Mode)<br/>- Thẩm định và cấp phép nguồn LIVE chính thức<br/>- Collector Engine tuân thủ robots.txt & per-source rate limit<br/>- Cơ chế Provenance Tracking đầy đủ"]
+    
+    Phase3["Phase 3: Bền vững hóa Dữ liệu (Persistence & PostgreSQL)<br/>- Chuyển đổi RAM Store sang PostgreSQL qua Repository Abstraction<br/>- Quản lý lịch sử chiến dịch & truy vấn lead nâng cao"]
+    
+    Phase4["Phase 4: Hàng đợi Phân tán & Tách rời Worker (Distributed Worker)<br/>- Tách rpa-worker thành container/process độc lập<br/>- Tích hợp Redis Task Queue / Message Broker<br/>- Chia sẻ contract qua thư mục contracts/"]
+    
+    Phase5["Phase 5: Dịch vụ AI Độc lập & Xử lý Nâng cao (Standalone AI Engine)<br/>- Tách ai-engine thành microservice chuyên biệt<br/>- Hỗ trợ mô hình OCR & trích xuất văn bản phi cấu trúc phức tạp"]
+
+    Phase1 --> Phase2
+    Phase2 --> Phase3
+    Phase3 --> Phase4
+    Phase4 --> Phase5
 ```
 
-### 18.1 Chi tiết Công việc Từng Ngày
+### 18.1 Chi tiết Các Giai đoạn Triển khai (Phased Details)
 
-#### Ngày 1 (Day 1): Khung Yêu cầu, Đề xuất Nguồn, Chốt Schema & Scaffolding
-* **Mục tiêu:** Thiết lập nền tảng kỹ thuật, danh mục 63 tỉnh/thành chuẩn và đệ trình đề xuất nguồn dữ liệu cho TechLead.
+#### Giai đoạn 1 (Phase 1): Nền tảng Monolith Cục bộ & Pipeline Dùng chung (MVP Core Release)
+* **Mục tiêu:** Xây dựng bản MVP hoàn chỉnh chạy cục bộ, chứng minh tính khả thi kỹ thuật (Proof of Concept) của toàn bộ quy trình End-to-End từ giao diện người dùng đến file xuất Excel.
+* **Ranh giới Kiến trúc:**
+  * Backend: FastAPI (Modular Monolith) với kiến trúc phân tầng rõ ràng (API, Service, Pipeline, Repository).
+  * Frontend: React 18 + Vite + TypeScript + Tailwind CSS (`web/`).
+  * Thực thi Pipeline: Chạy in-process trong cùng tiến trình máy chủ (`FastAPI BackgroundTasks`), không dùng Celery hay Redis.
+  * Lưu trữ: Quản lý trạng thái chiến dịch trong bộ nhớ RAM (`InMemoryCampaignStore`) thông qua lớp trừu tượng `CampaignRepository` và `LeadRepository`.
+  * Dữ liệu mẫu: Bộ fixture HTML mẫu đa địa phương (bắt buộc có Đà Nẵng, Hà Nội/TP.HCM, và bản ghi thiếu province) trong `tests/fixtures/`.
+  * Xuất file: Tệp Microsoft Excel (`.xlsx`) gồm 2 sheet `Leads` (12 cột) và `Summary` lưu trong thư mục `exports/`.
+* **Deliverables:**
+  * Bộ tài liệu chuẩn hóa hoàn chỉnh trong `docs/`.
+  * Mã nguồn backend FastAPI và frontend React hoạt động thông suốt.
+  * 06 Endpoint RESTful theo đúng [`docs/api-contract.md`](docs/api-contract.md).
+  * Bộ kiểm thử tự động (Unit & Integration tests) cho các khâu validation, normalization, deduplication và export.
+* **Acceptance Criteria (Tiêu chí Nghiệm thu):**
+  * Người dùng cấu hình và bấm chạy chiến dịch trên Web UI; hệ thống thực thi không lỗi ở chế độ FIXTURE.
+  * Hiển thị bảng xem trước (preview) dữ liệu lead trên UI và tải thành công file `.xlsx`.
+  * Đạt 100% tiêu chí chất lượng: 11 trường canonical đúng chuẩn, có số liệu thống kê metrics toán học nhất quán.
+
+#### Giai đoạn 2 (Phase 2): Hoàn thiện Nguồn Dữ liệu & Thu thập Trực tiếp (Source Hardening & Live Mode)
+* **Mục tiêu:** Cấp phép và tích hợp nguồn dữ liệu trực tiếp (LIVE) sau khi có văn bản phê duyệt chính thức từ TechLead và bộ phận pháp chế.
 * **Nhiệm vụ cụ thể:**
-  * Hoàn thiện tài liệu PRD, data dictionary (bao gồm quy tắc chuẩn hóa `province`) và ma trận đánh giá nguồn dữ liệu.
-  * Nghiên cứu các website ứng viên, kiểm chứng thực nghiệm độ phủ Toàn quốc và Đà Nẵng; hoàn thành báo cáo `source-research.md` gửi TechLead.
-  * Chuẩn bị danh mục tham chiếu 63 tỉnh/thành phố chuẩn của Việt Nam (theo GSO) để phục vụ module làm sạch dữ liệu.
-  * Khởi tạo repository, cấu hình môi trường phát triển (Python, quản lý dependencies, cấu hình `.env.example`).
-  * Xây dựng module trừu tượng `LLMClient` và viết unit test mock API.
-* **Deliverables:** PRD hoàn chỉnh, tài liệu `source-research.md`, danh mục 63 tỉnh/thành, repo scaffold sạch, module LLM client cơ bản.
-* **Definition of Done (DoD):** Dự án chạy được lệnh kiểm tra môi trường, nạp được cấu hình từ `.env`, gọi thử nghiệm được LLM API mẫu.
-* **Công việc song song khi chờ duyệt nguồn:** Thiết kế prompt, viết module validation dữ liệu với fixture mẫu.
+  * Kiểm chứng tuân thủ ToS và `robots.txt` cho từng nguồn mục tiêu (áp dụng crawl-delay riêng biệt, ví dụ 5.0s cho Trang Vàng).
+  * Viết module adapter thu thập dữ liệu live (HTTP client `httpx` với retry/backoff và circuit breaker).
+  * Hoàn thiện cơ chế Provenance Tracking (lưu trữ vết URL gốc và mốc thời gian thu thập cho từng bản ghi).
+  * Tuyệt đối không tự động fallback từ LIVE sang FIXTURE khi gặp sự cố mạng (báo lỗi trung thực).
+* **Deliverables:** Module `LiveSourceAdapter` đã kiểm chứng, cấu hình per-source rate limiter, bộ test kiểm tra khả năng phục hồi lỗi mạng.
+* **Acceptance Criteria:** Thu thập thành công bản ghi thật từ nguồn LIVE đã duyệt cho 2 ngành Education và Manufacturing trên phạm vi Toàn quốc và Đà Nẵng.
 
-#### Ngày 2 (Day 2): Xây dựng Module Thu thập Dữ liệu (Data Collector) & Fixtures Đa Vùng
-* **Mục tiêu:** Thu thập thành công nội dung thô từ nguồn được duyệt hoặc nạp bộ fixture mẫu đa địa phương.
+#### Giai đoạn 3 (Phase 3): Bền vững hóa Dữ liệu (Persistence & PostgreSQL Storage)
+* **Mục tiêu:** Thay thế bộ lưu trữ RAM tạm thời bằng hệ quản trị cơ sở dữ liệu quan hệ PostgreSQL để bảo toàn dữ liệu chiến dịch qua các lần khởi động lại máy chủ.
 * **Nhiệm vụ cụ thể:**
-  * Nhận phản hồi phê duyệt (hoặc kích hoạt Fallback plan).
-  * Viết module thu thập dữ liệu (HTTP client với `requests`/`httpx` hoặc headless browser `playwright` nếu bắt buộc).
-  * Xây dựng cơ chế truyền tham số lọc địa phương (nếu nguồn hỗ trợ server-side query params như `?city=...`) hoặc thu thập danh mục phục vụ lọc sau ở pipeline.
-  * Cài đặt cơ chế rate limit (delay 1.5s – 5.0s theo `robots.txt`), xử lý lỗi mạng và lưu lại HTML/Text thô.
-  * Đóng gói sẵn 1 bộ fixture HTML mẫu đa địa phương (bắt buộc có Đà Nẵng, Hà Nội/TP.HCM, và bản ghi thiếu province) trong thư mục `tests/fixtures/`.
-* **Deliverables:** Module `DataCollector` hoạt động ổn định, bộ fixture mẫu đa vùng miền sẵn sàng.
-* **Definition of Done (DoD):** Chạy collector thu thập được ít nhất 10 trang mẫu về máy local (hoặc nạp bộ fixture mẫu đa địa phương) mà không bị lỗi.
+  * Cài đặt `PostgresCampaignRepository` kế thừa abstraction `CampaignRepository` mà không làm thay đổi tầng nghiệp vụ (`services/`).
+  * Xây dựng schema cơ sở dữ liệu cho Campaign, Lead và Audit Log với công cụ migration Alembic.
+  * Hỗ trợ tìm kiếm, phân trang và truy vấn lịch sử nhiều chiến dịch từ Web UI.
+* **Deliverables:** Database schema, migrations script, Docker Compose service cho PostgreSQL, module repository PostgreSQL.
+* **Acceptance Criteria:** Dữ liệu chiến dịch và danh sách lead được bảo toàn nguyên vẹn sau khi khởi động lại server; hỗ trợ tra cứu lịch sử chiến dịch cũ.
 
-#### Ngày 3 (Day 3): Trích xuất LLM, Chuẩn hóa Province, Xác thực & Khử trùng lặp
-* **Mục tiêu:** Hoàn thiện đường ống biến đổi dữ liệu từ văn bản thô sang JSON đã được làm sạch, chuẩn hóa tỉnh/thành và khử trùng.
+#### Giai đoạn 4 (Phase 4): Hàng đợi Phân tán & Tách rời Worker (Distributed Worker & Message Queue)
+* **Mục tiêu:** Tách quy trình thu thập dữ liệu nặng ra khỏi tiến trình API server, chuyển sang mô hình xử lý phân tán với hàng đợi bền vững.
 * **Nhiệm vụ cụ thể:**
-  * Tinh chỉnh Prompt trích xuất cho 2 ngành Education & Manufacturing (Zero-shot / Few-shot với JSON Schema ràng buộc).
-  * Ghép nối đầu ra của Collector vào LLM Extractor để nhận JSON.
-  * Viết module `DataValidator` (sử dụng Pydantic hoặc code xác định) kiểm tra trường bắt buộc, chuẩn hóa số điện thoại, email, website.
-  * Cài đặt logic chuẩn hóa trường `province` về 63 tỉnh/thành chuẩn; xử lý trường hợp không rõ địa phương (lưu `null`/`""`, không đoán mò).
-  * Cài đặt logic lọc kết hợp theo phạm vi địa lý đã cấu hình (lọc kết quả sau trích xuất nếu nguồn không hỗ trợ lọc server-side).
-  * Viết module `Deduplicator` áp dụng quy tắc khử trùng lặp theo website và tên công ty + SĐT/địa chỉ.
-* **Deliverables:** Đường ống xử lý dữ liệu hoàn chỉnh từ Raw Text → Validated Lead Objects (đã lọc theo ngành và địa phương).
-* **Definition of Done (DoD):** Chạy kiểm thử tự động với 20 mẫu đầu vào đa địa phương, đầu ra đạt 100% tính hợp lệ theo schema và khử trùng lặp chính xác.
+  * Tách module pipeline thành service độc lập `rpa-worker/` đóng gói trong Docker container riêng.
+  * Tích hợp Redis làm Message Broker / Task Queue (sử dụng ARQ, Celery hoặc Redis Streams).
+  * Backend chuyển sang đóng vai trò Task Producer (dispatch task qua Redis); Worker đóng vai trò Task Consumer.
+  * Chia sẻ hợp đồng message/event qua thư mục `contracts/`.
+* **Deliverables:** Container `rpa-worker`, cấu hình Redis trong `docker-compose.yml`, contracts schema cho sự kiện pipeline.
+* **Acceptance Criteria:** API server phản hồi tức thì dưới 50ms khi nhận lệnh tạo campaign; Worker chạy độc lập trong background mà không ảnh hưởng đến độ trễ API.
 
-#### Ngày 4 (Day 4): Module Xuất Excel & Tích hợp Giao diện Local
-* **Mục tiêu:** Kết nối toàn bộ pipeline vào giao diện người dùng và xuất file Excel hoàn chỉnh có trường địa lý.
+#### Giai đoạn 5 (Phase 5): Dịch vụ AI Độc lập & Xử lý Nâng cao (Standalone AI Engine)
+* **Mục tiêu:** Tách module AI thành service chuyên biệt `ai-engine/` để xử lý các tác vụ suy luận phức tạp và tối ưu chi phí token.
 * **Nhiệm vụ cụ thể:**
-  * Viết module `ExcelExporter` bằng `openpyxl`, cài đặt đầy đủ styling (Freeze Panes, AutoFilter, Hyperlinks, hiển thị ô trống khi thiếu dữ liệu province, sheet Summary có ghi nhận Geographic Scope).
-  * Xây dựng giao diện ứng dụng cục bộ tối giản (Streamlit hoặc FastAPI + Web HTML/Tailwind) cho phép người dùng chọn ngành, chọn phạm vi địa lý (Toàn quốc hoặc dropdown tỉnh/thành có Đà Nẵng), cấu hình số lượng và bấm chạy.
-  * Tích hợp Orchestrator liên kết: `UI -> Collector -> LLM -> Validator/Filter -> Excel -> Download Link`.
-* **Deliverables:** Ứng dụng local chạy hoàn chỉnh từ giao diện đến file Excel tải về.
-* **Definition of Done (DoD):** Bấm nút trên giao diện, quy trình chạy thông suốt và xuất ra file `.xlsx` mở đẹp trên Excel.
+  * Xây dựng dịch vụ `ai-engine/` độc lập cung cấp gRPC hoặc REST API nội bộ.
+  * Hỗ trợ định tuyến thông minh giữa Cloud LLM (Gemini, OpenAI) và Local LLM (Ollama, vLLM) tùy thuộc vào quy mô dữ liệu.
+  * Tích hợp các khả năng xử lý tài liệu phi cấu trúc nâng cao: OCR hình ảnh bảng hiệu, phân tích tài liệu PDF, bóc tách đa thể thức.
+* **Deliverables:** Microservice `ai-engine`, cấu hình model serving, tài liệu API nội bộ giữa Worker và AI Engine.
+* **Acceptance Criteria:** Worker gọi AI Engine qua RPC/REST với cơ chế timeout/circuit breaker riêng biệt; hệ thống hoạt động ổn định khi AI Engine có độ trễ cao.
 
-#### Ngày 5 (Day 5): Kiểm thử End-to-End, Xử lý Lỗi, Tài liệu Hóa & Demo
-* **Mục tiêu:** Đảm bảo hệ thống vận hành ổn định, sẵn sàng trình diễn trước TechLead các kịch bản Đà Nẵng và Toàn quốc.
-* **Nhiệm vụ cụ thể:**
-  * Thực hiện kiểm thử toàn diện (End-to-End Testing) cho cả 2 ngành Education và Manufacturing.
-  * Kiểm thử các kịch bản địa lý: (1) Chiến dịch lọc Đà Nẵng, (2) Chiến dịch lọc địa phương khác, (3) Chiến dịch Toàn quốc, (4) Kiểm tra bản ghi khuyết thiếu province hiển thị ô trống trong Excel.
-  * Kiểm thử các kịch bản lỗi: Sai API key, nguồn sập, 0 bản ghi, website chặn truy cập.
-  * Tinh chỉnh giao diện và thông báo phản hồi người dùng.
-  * Viết hoàn chỉnh tài liệu `README.md` (hướng dẫn cài đặt, cấu hình `.env`, cách chạy ứng dụng trong 3 bước).
-  * Chuẩn bị kịch bản demo trực tiếp cho buổi nghiệm thu với TechLead.
-* **Deliverables:** Bản cài đặt hoàn chỉnh, tài liệu `README.md`, video/kịch bản demo, file Excel kết quả mẫu của 2 ngành (bao gồm mẫu kết quả Đà Nẵng và Toàn quốc).
-* **Definition of Done (DoD):** Vượt qua 100% các tiêu chí trong Bảng kiểm nghiệm thu (Acceptance Checklist).
-
-### 18.2 Điều kiện Bất khả thi & Phương án Cắt giảm Phạm vi (De-scoping Contingency)
-Nếu trong quá trình thực hiện gặp phải các rào cản nghiêm trọng, lập trình viên sẽ áp dụng phương án cắt giảm phạm vi (de-scoping) sau đây thay vì giấu giếm rủi ro:
-* **Nếu website mục tiêu dùng công nghệ chống bot quá phức tạp (Cloudflare Turnstile, CAPTCHA):** Không cố gắng vượt rào → Chuyển sang cào nguồn danh bạ phụ hoặc dùng ngay Fallback Dataset đã được TechLead phê duyệt.
-* **Nếu giao diện web tốn quá nhiều thời gian:** Cắt giảm frontend xuống thành giao diện Command Line Interface (CLI) trực quan (dùng thư viện `typer` hoặc `rich`) hoặc giao diện Streamlit đơn giản 1 trang duy nhất; tập trung toàn lực vào chất lượng dữ liệu và file Excel.
-* **Nếu LLM API của công ty bị cấp trễ:** Sử dụng module Mock LLM Extractor (dựa trên Regex + mẫu JSON cứng) trong Day 3 để tiếp tục làm phần Validator và Excel, ghép API thật vào Day 4 khi được cấp.
+### 18.2 Phương án Cắt giảm Phạm vi Khi Gặp Rào cản Kỹ thuật (De-scoping Contingency)
+* **Nếu website mục tiêu dùng công nghệ chống bot quá phức tạp (Cloudflare Turnstile, CAPTCHA):** Không cố gắng vượt rào trái phép → Giữ nguyên hệ thống ở chế độ Fixture Mode và đệ trình TechLead xem xét cấp phép nguồn API hoặc dữ liệu mở chính thống.
+* **Nếu LLM API của công ty bị gián đoạn hoặc cạn Quota:** Sử dụng module `MockLLMExtractor` (bóc tách xác định theo mẫu quy chuẩn) để kiểm thử toàn diện các khâu còn lại của pipeline mà không bị đình trệ tiến độ.
 
 ---
 
@@ -674,21 +671,21 @@ Nếu trong quá trình thực hiện gặp phải các rào cản nghiêm trọ
 
 | STT | Rủi ro (Risk Description) | Xác suất | Tác động | Biện pháp Giảm thiểu (Mitigation Strategy) | Người phụ trách |
 | :---: | :--- | :---: | :---: | :--- | :---: |
-| **R-01** | **Phê duyệt nguồn dữ liệu bị chậm trễ:** TechLead hoặc bộ phận pháp chế không kịp phê duyệt nguồn web trước Ngày 2. | Cao | Nghiêm trọng | Kích hoạt ngay Fallback Plan vào trưa Ngày 2: Dùng bộ fixture HTML mẫu được chuẩn bị sẵn để kiểm thử toàn bộ pipeline; không để tiến độ bị tắc nghẽn. | Developer & TechLead |
+| **R-01** | **Phê duyệt nguồn dữ liệu bị chậm trễ:** TechLead hoặc bộ phận pháp chế chưa kịp phê duyệt nguồn web trước khi triển khai Live Mode. | Cao | Nghiêm trọng | Kích hoạt Fallback Plan: Vận hành ở Fixture Mode với bộ fixture HTML mẫu đa địa phương để kiểm thử toàn bộ pipeline; không để tiến độ bị tắc nghẽn. | Developer & TechLead |
 | **R-02** | **Dữ liệu web không đầy đủ / thiếu trường:** Website mục tiêu thiếu email, số điện thoại hoặc mô tả doanh nghiệp. | Rất cao | Trung bình | Định nghĩa các trường này là `Optional` trong Data Dictionary; quy định rõ giá trị hiển thị khi thiếu là chuỗi rỗng hoặc `"N/A"`, không để hệ thống crash. | BA & Developer |
 | **R-03** | **Cấu trúc website thay đổi đột ngột:** Layout HTML của nguồn thay đổi khiến collector không lấy được khối nội dung. | Trung bình | Cao | Thu thập khối nội dung văn bản bao quát (broad text containers) thay vì phụ thuộc vào XPath quá chi tiết; dựa vào khả năng hiểu ngữ cảnh của LLM để bóc tách. | Developer |
 | **R-04** | **Bị giới hạn tần suất / Khóa IP (Rate Limit / IP Block):** Gửi quá nhiều request khiến website mục tiêu chặn IP máy local. | Trung bình | Cao | Đặt độ trễ (delay) cố định 1.5s – 3s giữa các request; thu thập số lượng nhỏ bản ghi phục vụ demo (15–20 records); tôn trọng robots.txt. | Developer |
 | **R-05** | **LLM sinh ảo giác hoặc trả về sai định dạng JSON:** LLM tự sáng tác số điện thoại hoặc trả về text kèm Markdown không parse được. | Cao | Cao | Thiết lập `temperature=0.0`; dùng Structured Outputs / JSON Mode; áp dụng Prompt ràng buộc: "Chỉ trích xuất dữ liệu có trong bài"; bọc tầng Pydantic xác thực lại bằng code xác định. | Developer |
 | **R-06** | **LLM API bị gián đoạn hoặc hết Quota:** API công ty cung cấp gặp sự cố hoặc cạn token trong quá trình chạy. | Thấp | Nghiêm trọng | Bắt ngoại lệ API error; lưu lại dữ liệu đã trích xuất thành công; hỗ trợ cấu hình chuyển đổi sang provider phụ (backup API key) qua file `.env`. | Developer & TechLead |
 | **R-07** | **Dữ liệu lead bị trùng lặp:** Một công ty xuất hiện nhiều lần ở các trang danh mục khác nhau. | Cao | Thấp | Cài đặt module Deduplication xác định; loại bỏ trùng lặp dựa trên website chuẩn hóa hoặc tên công ty kết hợp số điện thoại/địa chỉ. | Developer |
-| **R-08** | **Kỳ vọng số lượng bản ghi phi thực tế:** Stakeholder kỳ vọng cào hàng ngàn lead trong buổi demo 5 ngày. | Trung bình | Trung bình | Truyền thông rõ ràng trong PRD: Mục tiêu MVP là chứng minh quy trình End-to-End với 20–50 records chuẩn, không phải cào dữ liệu quy mô lớn (Mass Scraping). | BA & TechLead |
-| **R-09** | **Phình to phạm vi (Scope Creep):** Phát sinh yêu cầu làm thêm tính năng gửi email, chấm điểm lead, hay dashboard phân tích. | Cao | Nghiêm trọng | Bám sát danh mục Out-of-Scope của PRD; kiên quyết từ chối các tính năng không thuộc P0 trong 5 ngày đầu tiên. | Developer & TechLead |
+| **R-08** | **Kỳ vọng số lượng bản ghi phi thực tế:** Stakeholder kỳ vọng cào hàng ngàn lead trong phiên bản thử nghiệm ban đầu (Phase 1). | Trung bình | Trung bình | Truyền thông rõ ràng trong PRD: Mục tiêu MVP là chứng minh quy trình End-to-End với 20–50 records chuẩn, không phải cào dữ liệu quy mô lớn (Mass Scraping). | BA & TechLead |
+| **R-09** | **Phình to phạm vi (Scope Creep):** Phát sinh yêu cầu làm thêm tính năng gửi email, chấm điểm lead, hay dashboard phân tích. | Cao | Nghiêm trọng | Bám sát danh mục Out-of-Scope của PRD; kiên quyết từ chối các tính năng không thuộc P0 trong giai đoạn khởi tạo (Phase 1). | Developer & TechLead |
 
 ---
 
 ## 20. Assumptions and Open Questions (Giả định & Câu hỏi Mở cho TechLead)
 
-### 20.1 Quyết định Chặn Triển khai (Blocking Decisions — Cần TechLead Chốt Trước Ngày 2)
+### 20.1 Quyết định Chặn Triển khai (Blocking Decisions — Cần TechLead Phê duyệt)
 1. **[Q-01] Nguồn dữ liệu chính thức:** Website hoặc danh bạ cụ thể nào được phép thu thập cho ngành Education và Manufacturing?
 2. **[Q-02] Thông tin LLM API:** Công ty cung cấp LLM API của nhà cung cấp nào (OpenAI, Azure, Google Gemini, Anthropic hay Local Model)? Endpoint, model name, hạn mức request/phút (TPM/RPM) và token là bao nhiêu?
 3. **[Q-03] Phạm vi địa lý & Phê duyệt Nguồn tương ứng (Geographic Scope & Source Alignment):**
@@ -698,7 +695,7 @@ Nếu trong quá trình thực hiện gặp phải các rào cản nghiêm trọ
      * **VASI (`vasi.org.vn`):** Nguồn Sản xuất chỉ có 17 tỉnh thành, **hoàn toàn khuyết thiếu Đà Nẵng**.
      * **Cổng DLM TP.HCM:** Chỉ có dữ liệu TP.HCM, không có Đà Nẵng, không đáp ứng toàn quốc.
      * **Kế hoạch Fallback Fixtures:** Tập dữ liệu HTML mẫu đa tỉnh thành (bắt buộc có Đà Nẵng, Hà Nội/TP.HCM, và bản ghi thiếu province) để chạy demo offline an toàn.
-   * *TechLead quyết định:* Phê duyệt cào Trang Vàng live (chấp nhận ToS với crawl-delay giãn cách) hay chỉ phê duyệt chạy chế độ Fallback Fixture đa địa phương cho buổi demo Day 5?
+   * *TechLead quyết định:* Phê duyệt cào Trang Vàng live (chấp nhận ToS với crawl-delay giãn cách cho Phase 2) hay chỉ phê duyệt chạy chế độ Fallback Fixture đa địa phương cho Phase 1?
 
 ### 20.2 Quyết định Áp dụng Đề xuất Mặc định (Decisions with Proposed Defaults)
 Các quyết định sau đây nếu TechLead chưa phản hồi ngay, Developer sẽ tạm thời áp dụng **Đề xuất Mặc định** để tiếp tục công việc:
@@ -709,8 +706,8 @@ Các quyết định sau đây nếu TechLead chưa phản hồi ngay, Developer
    * *Trạng thái:* `TBD — Pending TechLead confirmation`
    * *Đề xuất mặc định (Proposed Default):* Đặt là `Optional`. Do nhiều website chỉ có form liên hệ mà không để email/phone công khai, nếu đặt mandatory sẽ làm loại bỏ phần lớn bản ghi.
 3. **[Q-06] Giao diện người dùng (UI Stack):**
-   * *Trạng thái:* Developer tự chọn (Confirmed).
-   * *Đề xuất mặc định (Proposed Default):* Sử dụng **Streamlit** (Python) hoặc **FastAPI + Web HTML/Tailwind đơn giản** nhằm tiết kiệm thời gian, hoàn thành trong 0.5 ngày để tập trung vào pipeline dữ liệu.
+   * *Trạng thái:* **[CONFIRMED]** (Theo ADR-03 trong `docs/architecture.md`).
+   * *Quyết định:* Sử dụng **React 18 + Vite + TypeScript + Tailwind CSS** tổ chức tại thư mục `web/`. Giao diện là Single-Page Application (SPA) độc lập, kết nối với Backend thông qua REST API chuẩn hóa.
 4. **[Q-07] Quản lý lịch sử chiến dịch:**
    * *Trạng thái:* `TBD — Pending TechLead confirmation`
    * *Đề xuất mặc định (Proposed Default):* Trong MVP chỉ hỗ trợ thực thi từng chiến dịch đơn lẻ (Single Campaign). Không lưu trữ lịch sử phức tạp vào cơ sở dữ liệu; kết quả được lưu trực tiếp vào thư mục chứa file Excel (`exports/`).
@@ -737,7 +734,7 @@ Tài liệu này được đệ trình để TechLead xem xét và phê duyệt 
 | **Thông số LLM API** | Abstraction Client đọc qua `.env` (Mục 11.3) | [ ] Đồng ý kiến trúc<br>[ ] Đã cấp credentials: _________ | _(Chờ ký duyệt)_ |
 | **Danh mục Trường & Schema** | 11 trường trong Data Dictionary (Mục 12.1), trường `province` là Optional và chuẩn hóa theo 63 tỉnh/thành GSO | [ ] Phê duyệt đầy đủ<br>[ ] Điều chỉnh: _________ | _(Chờ ký duyệt)_ |
 | **Tiêu chí Số lượng Record** | Mặc định 20 records/chiến dịch demo (Mục 20.2) | [ ] Đồng ý 20 records<br>[ ] Yêu cầu số khác: _________ | _(Chờ ký duyệt)_ |
-| **Kế hoạch 5 Ngày (Delivery Plan)** | Tiến độ từng ngày bao gồm chuẩn hóa địa lý và kịch bản demo Đà Nẵng/Toàn quốc (Mục 18) | [ ] Phê duyệt kế hoạch<br>[ ] Điều chỉnh: _________ | _(Chờ ký duyệt)_ |
+| **Lộ trình Triển khai Phân kỳ (Phased Roadmap)** | Kế hoạch phân kỳ Phase 1 đến Phase 5, bao gồm chuẩn hóa địa lý và kiểm thử Đà Nẵng/Toàn quốc (Mục 18) | [ ] Phê duyệt lộ trình<br>[ ] Điều chỉnh: _________ | _(Chờ ký duyệt)_ |
 
 ---
 

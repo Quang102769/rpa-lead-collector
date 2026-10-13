@@ -9,16 +9,13 @@
 * **Tên tài liệu:** Đặc tả Từ điển Dữ liệu, Chuẩn hóa Schema và Định dạng Excel (Data Dictionary & Normalization Specification)
 * **Mã tài liệu:** `DATA-DICT-LEADGEN-001`
 * **Phiên bản:** `1.0-DRAFT`
-* **Ngày tạo:** 13/10/2026 (Ngày 1 của Chu kỳ MVP 5 ngày)
-* **Vai trò tác giả:** Senior Software Engineer & Technical Documentation Engineer
-* **Người phê duyệt:** TechLead
-* **Trạng thái tài liệu:** `Chờ TechLead phê duyệt (Pending TechLead Approval)`
+* **Ngày tạo:** 13/10/2026
 * **Tài liệu liên quan trực tiếp:**
-  * [`docs/PRD.md`](file:///D:/ai-rpa-lead-generator/docs/PRD.md) (Phiên bản `1.2-NATIONWIDE`)
-  * [`docs/source-research.md`](file:///D:/ai-rpa-lead-generator/docs/source-research.md) (Phiên bản `1.2-NATIONWIDE`)
+  * [`docs/PRD.md`](Phiên bản `1.2-NATIONWIDE`)
+  * [`docs/source-research.md`](Phiên bản `1.2-NATIONWIDE`)
 
 ### 1.2 Mục đích và Ranh giới Tài liệu
-Tài liệu này cung cấp **đặc tả kỹ thuật sẵn sàng triển khai (implementation-ready specification)** cho lập trình viên duy nhất trong chu kỳ 5 ngày của dự án **AI RPA Lead Collector MVP**, bao gồm:
+Tài liệu này cung cấp **đặc tả kỹ thuật sẵn sàng triển khai (implementation-ready specification)** cho lập trình viên duy nhất trong giai đoạn phát triển **AI RPA Lead Collector MVP (Phase 1)**, bao gồm:
 1. Định nghĩa chuẩn xác 11 trường dữ liệu nghiệp vụ của thực thể Lead B2B.
 2. Quy tắc chuẩn hóa xác định (deterministic normalization) đối với địa lý, URL, email, và số điện thoại.
 3. Cơ chế xác thực schema, khử trùng lặp xác định (deterministic deduplication), và xử lý dữ liệu khuyết thiếu.
@@ -28,7 +25,7 @@ Tài liệu này cung cấp **đặc tả kỹ thuật sẵn sàng triển khai 
 ### 1.3 Quy ước Phân loại Quyết định
 Tài liệu phân định nghiêm ngặt ba trạng thái yêu cầu:
 * **`[CONFIRMED]` - Đã xác nhận:** Các yêu cầu đã được thống nhất chính thức từ đề bài và tài liệu PRD v1.2.
-* **`[PROPOSED]` - Đề xuất mặc định:** Các giải pháp kỹ thuật cụ thể do Engineer đề xuất để lập trình viên áp dụng ngay trong 5 ngày nhằm đảm bảo tiến độ.
+* **`[PROPOSED]` - Đề xuất mặc định:** Các giải pháp kỹ thuật cụ thể do Engineer đề xuất để lập trình viên áp dụng trong giai đoạn Phase 1.
 * **`[TBD — Pending TechLead confirmation]` - Chờ phê duyệt:** Các hạng mục bắt buộc TechLead phải chốt trước hoặc trong buổi nghiệm thu.
 
 ---
@@ -216,7 +213,7 @@ Khi người dùng khởi tạo một chiến dịch trên giao diện, đối t
 * Khi chạy chiến dịch đơn tỉnh (`geographic_scope == "PROVINCE"`): Hệ thống chỉ giữ lại các lead có `lead.province == target_province`. Nếu nguồn trả về bản ghi có `lead.province` khác hoặc `lead.province == null`, bản ghi đó sẽ bị loại bỏ khỏi kết quả cuối cùng của chiến dịch này.
 
 #### 2. Phân định giữa Bộ lọc Chiến dịch và Độ phủ Thực tế của Nguồn (Source Coverage)
-Người dùng có quyền chọn bất kỳ tỉnh/thành nào hoặc chọn Toàn quốc trên giao diện hệ thống. Tuy nhiên, khả năng đáp ứng phụ thuộc vào độ phủ thực tế của từng nguồn dữ liệu (đã khảo sát trong [`docs/source-research.md`](file:///D:/ai-rpa-lead-generator/docs/source-research.md)):
+Người dùng có quyền chọn bất kỳ tỉnh/thành nào hoặc chọn Toàn quốc trên giao diện hệ thống. Tuy nhiên, khả năng đáp ứng phụ thuộc vào độ phủ thực tế của từng nguồn dữ liệu (đã khảo sát trong [`docs/source-research.md`]):
 * **Trang Vàng VN (`trangvangvietnam.com`):** Độ phủ thực tế là **Toàn quốc** và **có dữ liệu Đà Nẵng** cho cả 2 ngành. Hỗ trợ lọc trực tiếp qua query params (`?city=...`).
 * **VASI (`vasi.org.vn`):** Độ phủ thực tế chỉ gồm **17 tỉnh thành công nghiệp lớn** (Bắc/Nam), **hoàn toàn khuyết thiếu Đà Nẵng**. Nếu cấu hình `target_province = "Đà Nẵng"`, nguồn này sẽ trả về 0 kết quả hợp lệ.
 * **Cổng DLM TP.HCM:** Là **nguồn cục bộ (Local Only)**, chỉ có dữ liệu TP.HCM, không hỗ trợ Đà Nẵng hay Toàn quốc.
@@ -280,7 +277,7 @@ Do Đà Nẵng là địa bàn bắt buộc có dữ liệu kiểm chứng của
 > **Vấn đề Đối chiếu Danh mục Đơn vị Hành chính Cấp Tỉnh:**
 > * Trong tài liệu PRD ban đầu, danh mục tham chiếu được giả định là **63 tỉnh/thành phố**.
 > * Tuy nhiên, theo các Nghị quyết của Quốc hội và lộ trình sắp xếp đơn vị hành chính giai đoạn 2023–2025, cơ cấu đơn vị hành chính có những điều chỉnh liên tục theo các văn bản quy phạm pháp luật mới nhất.
-> * **Giải pháp cho MVP 5 ngày:**
+> * **Giải pháp cho MVP Phase 1:**
 >   * `[PROPOSED]` Tạm thời sử dụng danh mục nền tảng **63 tỉnh/thành phố chuẩn** của Tổng cục Thống kê (GSO - Quyết định 124/2004/QĐ-TTg và bảng mã cập nhật hiện hành) làm bộ tham chiếu mặc định trong code để không làm gián đoạn tiến độ.
 >   * `[TBD — Pending TechLead confirmation]` Trình TechLead xem xét và phê duyệt văn bản quy chuẩn chính thức cần đối chiếu nếu doanh nghiệp yêu cầu chuẩn hóa theo danh mục hành chính chuyên biệt.
 
@@ -665,13 +662,13 @@ Ma trận dưới đây định nghĩa hành vi xác định của hệ thống 
 | 9 | **Chiến lược Khử trùng lặp Xác định** | 3 bước so sánh (Domain → Tên + SĐT/Địa chỉ → Strict Negative) được định nghĩa rõ ràng (Mục 7). | [x] Đã hoàn thành |
 | 10 | **Đặc tả File Excel Hoàn chỉnh** | Định dạng 2 sheet (`Leads` và `Summary`), freeze pane dòng 1, autofilter, hyperlinks, ô trống khi thiếu (Mục 8). | [x] Đã hoàn thành |
 | 11 | **Không Tự Duyệt Nguồn Dữ liệu** | Ghi nhận rõ hiện trạng nguồn và độ phủ thực tế đối chiếu từ `source-research.md`; không tự coi nguồn là đã duyệt (Mục 3.3). | [x] Đã hoàn thành |
-| 12 | **Danh sách Quyết định Chờ Duyệt** | Liệt kê đầy đủ các quyết định cần TechLead xác nhận trước Ngày 2 (Mục 11.3). | [x] Đã hoàn thành |
+| 12 | **Danh sách Quyết định Chờ Duyệt** | Liệt kê đầy đủ các quyết định cần TechLead xác nhận trước khi triển khai (Mục 11.3). | [x] Đã hoàn thành |
 
 ---
 
 ### 11.2 Ma trận Truy vết Yêu cầu về PRD (Requirements Traceability Matrix)
 
-| Yêu cầu trong `data-dictionary.md` | Mục tương ứng trong [`docs/PRD.md`](file:///D:/ai-rpa-lead-generator/docs/PRD.md) | Ghi chú Đối chiếu |
+| Yêu cầu trong `data-dictionary.md` | Mục tương ứng trong [`docs/PRD.md] | Ghi chú Đối chiếu |
 | :--- | :--- | :--- |
 | 11 Trường Dữ liệu Canonical | **Mục 12.1 (Data Dictionary)** | Hoàn toàn khớp tên trường, kiểu dữ liệu và tính bắt buộc. |
 | Ngành Education & Manufacturing | **Mục 7.1, 7.2 (Target Industries)** | Khớp danh mục ngành và taxonomy dự thảo. |
@@ -692,9 +689,9 @@ Ma trận dưới đây định nghĩa hành vi xác định của hệ thống 
 | :---: | :--- | :--- | :--- |
 | **DEC-01** | **Chuẩn Danh mục Đơn vị Hành chính:** Áp dụng danh mục 63 tỉnh/thành phố GSO chuẩn hay danh mục điều chỉnh sau sáp nhập 2025? | Sử dụng 63 tỉnh/thành phố GSO hiện hành làm từ điển tham chiếu trong code. | Nếu thay đổi, cập nhật lại bảng từ điển ánh xạ `provinces_lookup.json`. |
 | **DEC-02** | **Chính sách Xung đột Dữ liệu khi Gộp Lead:** Khi 2 bản ghi trùng có thông tin SĐT/Website khác nhau, ưu tiên bản ghi nào? | Ưu tiên giữ dữ liệu của bản ghi đến trước (`Record_A`), ghi log cảnh báo xung đột. | Điều chỉnh logic merge trong module `Deduplicator`. |
-| **DEC-03** | **Phê duyệt Nguồn Dữ liệu Live hay Fixture:** Dùng Trang Vàng (Toàn quốc + Đà Nẵng, có rủi ro ToS) hay chạy Fallback Fixture đa vùng? | Chuẩn bị sẵn cả Collector Trang Vàng và Fixtures mẫu offline; kích hoạt Fallback lúc 12:00 Ngày 2 nếu chưa duyệt live. | Quyết định phân nhánh ở Ngày 2 của Developer. |
+| **DEC-03** | **Phê duyệt Nguồn Dữ liệu Live hay Fixture:** Dùng Trang Vàng (Toàn quốc + Đà Nẵng, có rủi ro ToS) hay chạy Fallback Fixture đa vùng? | Chuẩn bị sẵn cả Collector Trang Vàng và Fixtures mẫu offline; vận hành ở Fixture Mode cho Phase 1; kích hoạt Live Mode ở Phase 2 khi có phê duyệt. | Quyết định kích hoạt Live Mode. |
 | **DEC-04** | **Trạng thái Trường `sub_industry`, `website`, `public_email`, `public_phone`:** Giữ là `Optional` hay có trường nào chuyển sang bắt buộc? | Giữ toàn bộ là `Optional`; bản ghi thiếu trường này vẫn được coi là lead hợp lệ. | Nếu đặt bắt buộc, tỷ lệ lead bị loại bỏ sẽ tăng cao (ước tính 30%–60%). |
 
 ---
 
-*Tài liệu được lập bởi Senior Software Engineer & Technical Documentation Engineer. Toàn bộ mã nguồn triển khai trong Ngày 2 và Ngày 3 phải tuân thủ nghiêm ngặt các định nghĩa và ràng buộc trong tài liệu này.*
+*Tài liệu được lập bởi Senior Software Engineer & Technical Documentation Engineer. Toàn bộ mã nguồn triển khai từ Phase 1 trở đi phải tuân thủ nghiêm ngặt các định nghĩa và ràng buộc trong tài liệu này.*
