@@ -1,0 +1,37 @@
+# Hệ điều hành & IDE
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+# Dependencies
+node_modules/
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+# Environment Variables & Secrets (Bảo mật tuyệt đối)
+.env
+.env.*
+!.env.example
+secrets/
+*.pem
+*.key
+# Build outputs
+dist/
+build/
+.next/
+out/
+*.tsbuildinfo
+# Python / AI (nếu có module AI)
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
