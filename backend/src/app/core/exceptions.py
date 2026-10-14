@@ -97,9 +97,10 @@ class ExportNotReadyError(AppException):
             code=constants.ERR_EXPORT_NOT_READY,
             message=message,
             detail=detail,
-            status_code=400,
+            status_code=409,
             stage=constants.STAGE_EXPORT,
         )
+
 
 
 class ExportFileMissingError(AppException):
@@ -168,3 +169,37 @@ class InternalServerError(AppException):
             detail="Vui lòng thử lại sau. Nếu lỗi tiếp diễn, hãy liên hệ quản trị viên.",
             status_code=500,
         )
+
+
+class FixtureMissingError(AppException):
+    """Raised when an expected fixture file does not exist."""
+
+    def __init__(
+        self,
+        message: str = "Không tìm thấy tệp dữ liệu mẫu.",
+        detail: str | None = None,
+    ) -> None:
+        super().__init__(
+            code=constants.ERR_SRC_FIXTURE_MISSING,
+            message=message,
+            detail=detail,
+            status_code=500,
+            stage=constants.STAGE_COLLECTION,
+        )
+
+
+class FixtureInvalidFormatError(AppException):
+    """Raised when a fixture file has invalid JSON syntax or structure."""
+
+    def __init__(
+        self,
+        message: str = "Tệp dữ liệu mẫu không đúng định dạng.",
+        detail: str | None = None,
+    ) -> None:
+        super().__init__(
+            code=constants.ERR_CFG_INVALID,
+            message=message,
+            detail=detail,
+            status_code=500,
+            stage=constants.STAGE_COLLECTION,
+        )

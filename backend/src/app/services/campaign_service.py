@@ -80,6 +80,13 @@ class CampaignService:
         warning_zero_records: bool = False,
         error_code: str | None = None,
         error_message: str | None = None,
+        raw_records_scanned: int = 0,
+        records_extracted: int = 0,
+        records_valid: int = 0,
+        records_partial: int = 0,
+        records_rejected: int = 0,
+        duplicates_removed: int = 0,
+        final_unique_leads: int = 0,
     ) -> Campaign:
         """Transition a campaign to a terminal state and persist update."""
         campaign = self._store.get(campaign_id)
@@ -92,7 +99,15 @@ class CampaignService:
             error_code=error_code,
             error_message=error_message,
         )
+        campaign.raw_records_scanned = raw_records_scanned
+        campaign.records_extracted = records_extracted
+        campaign.records_valid = records_valid
+        campaign.records_partial = records_partial
+        campaign.records_rejected = records_rejected
+        campaign.duplicates_removed = duplicates_removed
+        campaign.final_unique_leads = final_unique_leads
         return self._store.update(campaign)
+
 
     def count_campaigns(self) -> int:
         """Return the total number of stored campaigns."""

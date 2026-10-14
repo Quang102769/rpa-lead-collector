@@ -1,0 +1,67 @@
+[
+  {
+    "company_name": "Cơ sở Đào tạo Kỹ năng Sông Hàn",
+    "industry": "Education",
+    "sub_industry": "Kỹ năng mềm",
+    "province": "TP. Da Nang",
+    "address": "Lô 12 Khu Công nghiệp Hòa Khánh, Liên Chiểu, Đà Nẵng",
+    "website": "https://songhan-skills.edu.vn",
+    "public_email": "info@songhan-skills.edu.vn",
+    "public_phone": "0236 3111 222",
+    "description": "Bản ghi có tên tỉnh viết tắt tiếng Anh không dấu: 'TP. Da Nang'",
+    "source_url": "fixture://test_cases/unnormalized_geo.json#1",
+    "collected_at": "2026-10-14T08:00:00Z"
+  },
+  {
+    "company_name": "Trung tâm Tin học Hải Châu",
+    "industry": "Education",
+    "sub_industry": "Tin học ứng dụng",
+    "province": "thành phố đà nẵng",
+    "address": "45 Lê Lợi, Phường Thạch Thang, Quận Hải Châu, Đà Nẵng",
+    "website": "https://haichau-it.edu.vn",
+    "public_email": "contact@haichau-it.edu.vn",
+    "public_phone": "0236 3222 333",
+    "description": "Bản ghi có tên tỉnh viết chữ thường: 'thành phố đà nẵng'",
+    "source_url": "fixture://test_cases/unnormalized_geo.json#2",
+    "collected_at": "2026-10-14T08:00:00Z"
+  },
+  {
+    "company_name": "Học viện Ngôn ngữ Sài Gòn",
+    "industry": "Education",
+    "sub_industry": "Ngoại ngữ",
+    "province": "TP.HCM",
+    "address": "123 Nguyễn Thị Minh Khai, Phường 6, Quận 3, TP Hồ Chí Minh",
+    "website": "https://saigon-language.edu.vn",
+    "public_email": "study@saigon-language.edu.vn",
+    "public_phone": "028 3930 1111",
+    "description": "Bản ghi có tên viết tắt phổ biến: 'TP.HCM'",
+    "source_url": "fixture://test_cases/unnormalized_geo.json#3",
+    "collected_at": "2026-10-14T08:00:00Z"
+  },
+  {
+    "company_name": "Trung tâm Hướng nghiệp & Việc làm Ngũ Hành Sơn",
+    "industry": "Education",
+    "sub_industry": "Tư vấn Nghề",
+    "province": null,
+    "address": "88 Đường Lê Văn Hiến, Phường Khuê Mỹ, Quận Ngũ Hành Sơn, Thành phố Đà Nẵng",
+    "website": "https://nguhanhson-career.edu.vn",
+    "public_email": "career@nguhanhson.edu.vn",
+    "public_phone": "0236 3444 555",
+    "description": "Bản ghi province là null nhưng trong address có 'Đà Nẵng' để kiểm tra trích xuất từ địa chỉ",
+    "source_url": "fixture://test_cases/unnormalized_geo.json#4",
+    "collected_at": "2026-10-14T08:00:00Z"
+  },
+  {
+    "company_name": "Tổ hợp Nghiên cứu Không Xác định Vùng",
+    "industry": "Education",
+    "sub_industry": "Nghiên cứu",
+    "province": "Vùng Tây Nam Bộ Không Rõ Tỉnh",
+    "address": "Thôn 3, Xã Chưa Xác Định",
+    "website": "https://unresolved-geo.edu.vn",
+    "public_email": "unresolved@example.edu.vn",
+    "public_phone": "0200 0000 000",
+    "description": "Bản ghi có tên địa lý không thể nhận diện được; kỳ vọng Normalizer gán null",
+    "source_url": "fixture://test_cases/unnormalized_geo.json#5",
+    "collected_at": "2026-10-14T08:00:00Z"
+  }
+]

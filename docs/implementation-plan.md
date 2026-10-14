@@ -16,7 +16,7 @@ Mục tiêu cốt lõi:
 ### 1.2 Nguyên tắc Triển khai Bắt buộc
 * **Kỷ luật Ranh giới Module:** Mọi dòng mã nguồn viết trong `backend/` phải tuân thủ 8 quy tắc phụ thuộc một chiều tại Mục 8 của [`docs/architecture.md`](architecture.md).
 * **Quy tắc Dispatch khi Chưa có Redis:** Trong Phase 1, toàn bộ quy trình pipeline bắt buộc chạy **in-process** (sử dụng `FastAPI BackgroundTasks`). Tuyệt đối không giả định Backend và Worker ở hai tiến trình độc lập có thể chia sẻ hàng đợi trong RAM.
-* **Chính sách Nguồn Dữ liệu Nghiêm ngặt:** Chế độ mặc định của Phase 1 là **`FIXTURE`**. Nguồn `LIVE` chỉ được tích hợp và kích hoạt khi có văn bản phê duyệt từ TechLead ở Phase 2. Tuyệt đối không tự động chuyển từ LIVE sang FIXTURE khi gặp lỗi.
+* **Chính sách Nguồn Dữ liệu & Kiểm soát Truy cập Kỹ thuật:** Chế độ mặc định của Phase 1 là **`FIXTURE`**. Nguồn `LIVE` được kích hoạt ở Phase 2 dựa trên chính sách kiểm soát truy cập kỹ thuật tự động (Technical Access Policy & Whitelist Validation: chỉ cho phép các nguồn trong whitelist cấu hình, tuân thủ `robots.txt`, crawl-delay, rate limiting per-source; loại bỏ thủ tục phê duyệt thủ công của TechLead theo quyết định cập nhật DEC-01). Hệ thống hỗ trợ phạm vi thu thập Toàn quốc (NATIONWIDE) và cấp Tỉnh/Thành phố. Tuyệt đối không tự động chuyển từ LIVE sang FIXTURE khi gặp lỗi.
 * **Chuẩn hóa Dữ liệu Tuyệt đối:** Tuân thủ đúng 11 trường canonical từ [`docs/data-dictionary.md`](data-dictionary.md). Không thêm `tax_code`, `business_scale`, hay `contact_person`. Bắt buộc hỗ trợ và kiểm chứng phạm vi Toàn quốc và Thành phố Đà Nẵng.
 
 ---
@@ -30,7 +30,7 @@ flowchart TD
     end
 
     subgraph Phase_2["Phase 2: Hoàn thiện Nguồn Dữ liệu & Thu thập Trực tiếp (Live Mode)"]
-        P2_Live["- Cấp phép nguồn LIVE chính thức (Trang Vàng VN)<br/>- Per-source rate limiting & Crawl-delay compliance<br/>- Full Provenance Tracking (source_url, collected_at)<br/>- Cơ chế xử lý lỗi mạng & Circuit Breaker"]
+        P2_Live["- Kiểm soát nguồn LIVE tự động theo Whitelist (Trang Vàng VN & toàn quốc)<br/>- Per-source rate limiting & Crawl-delay compliance<br/>- Full Provenance Tracking (source_url, collected_at)<br/>- Cơ chế xử lý lỗi mạng & Circuit Breaker"]
     end
 
     subgraph Phase_3["Phase 3: Bền vững hóa Dữ liệu (Persistence & PostgreSQL)"]
@@ -77,7 +77,7 @@ flowchart TD
    * Đăng ký router FastAPI với prefix canonical `/api/v1/` và alias `/api/`.
    * Cài đặt Global Exception Handlers bọc 100% lỗi theo vỏ bọc `StandardErrorResponse` (bắt `RequestValidationError` dịch sang tiếng Việt, giấu stack trace lỗi 500).
    * Hiện thực hóa 06 endpoints chuẩn:
-     * `POST /api/v1/campaigns` (Validate schema, từ chối LIVE chưa duyệt, trả HTTP 202).
+     * `POST /api/v1/campaigns` (Validate schema, kiểm soát chính sách truy cập LIVE theo cấu hình whitelist/chính sách kỹ thuật, trả HTTP 202).
      * `GET /api/v1/campaigns/{id}` (Thăm dò trạng thái, metrics, mảng `errors[]`).
      * `GET /api/v1/campaigns/{id}/leads` (Xem trước 11 trường canonical, phân trang).
      * `GET /api/v1/campaigns/{id}/export` (Tải file Excel, bảo vệ Path Traversal bằng `is_relative_to`).
@@ -90,7 +90,7 @@ flowchart TD
    * Cài đặt `CampaignService` và `LeadService`.
 
 4. **Đường ống Xử lý Dữ liệu Dùng chung (`pipeline/`, `collectors/`, `extraction/`, v.v.):**
-   * **Collectors:** Hiện thực `FixtureCollector` nạp dữ liệu mẫu đa địa phương (có Đà Nẵng) từ `data/fixtures/`; cài đặt `SourcePolicy` chặn request mạng tới nguồn live chưa duyệt.
+   * **Collectors:** Hiện thực `FixtureCollector` nạp dữ liệu mẫu đa địa phương (có Đà Nẵng) từ `data/fixtures/`; cài đặt `SourcePolicy` kiểm soát quyền truy cập mạng theo whitelist nguồn cấu hình.
    * **Extraction:** Hiện thực `LLMAdapter` kết nối Company LLM API qua `httpx` (JSON Schema Mode) kèm fallback `MockLLMExtractor` dự phòng.
    * **Validation:** Cài đặt `LeadValidator` kiểm tra 11 trường canonical, chuẩn hóa email/phone.
    * **Geographic Normalizer:** Cài đặt `GeoNormalizer` ánh xạ tỉnh/thành theo bộ tham chiếu có phiên bản; thiếu gán `null`.
@@ -119,18 +119,18 @@ flowchart TD
 
 ### Phase 2: Hoàn thiện Nguồn Dữ liệu & Thu thập Trực tiếp (Source Hardening & Live Mode)
 
-* **Phụ thuộc:** Hoàn thành Phase 1; Có văn bản phê duyệt nguồn LIVE từ TechLead và Pháp chế.
-* **Mục tiêu:** Kích hoạt khả năng thu thập dữ liệu trực tiếp từ nguồn web được cấp phép, đảm bảo tuân thủ đạo đức thu thập (`robots.txt`, crawl-delay), bảo toàn nguồn gốc dữ liệu (provenance), và có cơ chế chống sập khi gặp lỗi mạng.
+* **Phụ thuộc:** Hoàn thành Phase 1; Thống nhất cập nhật quyết định chính sách DEC-01 (bỏ phê duyệt thủ công của TechLead, áp dụng cơ chế kiểm soát kỹ thuật tự động và cấu hình whitelist).
+* **Mục tiêu:** Kích hoạt khả năng thu thập dữ liệu trực tiếp (LIVE) trên phạm vi toàn quốc và từng địa phương từ các nguồn web được cấu hình trong danh sách cho phép (whitelist), kiểm soát truy cập kỹ thuật tự động, đảm bảo tuân thủ đạo đức thu thập (`robots.txt`, crawl-delay), bảo toàn nguồn gốc dữ liệu (provenance), và có cơ chế chống sập khi gặp lỗi mạng.
 * **Thời lượng Ước tính:** 1 sprint phát triển.
 
 #### Danh mục Nhiệm vụ Kỹ thuật:
-1. **Source Policy & Compliance Hardening:**
-   * Cập nhật danh sách nguồn được duyệt trong `core/config.py`.
-   * Cài đặt module phân tích `robots.txt` tự động hoặc cấu hình cố định `Crawl-delay: 5` cho nguồn Trang Vàng.
+1. **Source Access Policy & Technical Compliance:**
+   * Cập nhật và kích hoạt danh sách nguồn cho phép trong cấu hình môi trường `APPROVED_LIVE_SOURCES` (thay thế quy trình ký duyệt thủ công cá nhân của TechLead).
+   * Cài đặt module phân tích `robots.txt` tự động hoặc cấu hình độ trễ an toàn (`Crawl-delay >= 5`) cho nguồn Trang Vàng và các nguồn mục tiêu.
    * Xây dựng cơ chế Per-source Rate Limiter (Token Bucket hoặc Semaphore delay).
-2. **Live Collector Adapters:**
-   * Hiện thực adapter thu thập trực tiếp cho Trang Vàng (`collectors/sources/trangvang_adapter.py`).
-   * Xây dựng cơ chế phân trang và truyền tham số địa phương (`?city=...`).
+2. **Live Collector Adapters (Phạm vi Toàn quốc & Tỉnh/Thành):**
+   * Hiện thực adapter thu thập trực tiếp cho Trang Vàng (`collectors/sources/trangvang_adapter.py`) và các nguồn danh bạ doanh nghiệp toàn quốc.
+   * Xây dựng cơ chế phân trang và lọc địa phương (`?city=...`) theo danh mục chuẩn (hỗ trợ cả phạm vi Toàn quốc NATIONWIDE và Tỉnh/Thành cụ thể như Đà Nẵng).
    * Bổ sung cơ chế thử lại (Retry with Exponential Backoff) cho lỗi HTTP 429/503.
 3. **Data Provenance & Audit Logging:**
    * Lưu vết chi tiết `source_url` chính xác tới từng trang listing hoặc trang chi tiết.
@@ -139,8 +139,8 @@ flowchart TD
    * Đảm bảo nguyên tắc bảo toàn dữ liệu: Khi 1 URL bị timeout hoặc LLM cạn quota giữa chừng, hệ thống dừng cào an toàn và xuất file Excel cho các lead đã lấy được (`PARTIAL_SUCCESS`).
    * Tuyệt đối không tự động chuyển ngầm từ LIVE sang FIXTURE khi lỗi mạng.
 
-* **Deliverables:** Module `LiveCollectorAdapter`, bộ cấu hình rate limiter, audit logging engine, báo cáo kiểm chứng tuân thủ nguồn.
-* **Acceptance Criteria:** Chạy thành công chiến dịch thu thập LIVE từ nguồn được duyệt; xuất file Excel chứa 100% lead có `source_url` thực tế; các lỗi mạng được ghi nhận trung thực vào mảng `errors[]`.
+* **Deliverables:** Module `LiveCollectorAdapter`, bộ cấu hình rate limiter, engine kiểm soát whitelist nguồn, audit logging engine, báo cáo kiểm chứng tuân thủ nguồn.
+* **Acceptance Criteria:** Chạy thành công chiến dịch thu thập LIVE trên phạm vi toàn quốc hoặc tỉnh thành từ nguồn trong whitelist; xuất file Excel chứa 100% lead có `source_url` thực tế; các lỗi mạng được ghi nhận trung thực vào mảng `errors[]`.
 
 ---
 

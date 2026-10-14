@@ -1,0 +1,67 @@
+[
+  {
+    "company_name": "Công ty TNHH Cơ Khí An Phát",
+    "industry": "Manufacturing",
+    "sub_industry": "Cơ khí Chế tạo",
+    "province": "Đà Nẵng",
+    "address": "Lô 5, KCN Hòa Khánh, Liên Chiểu, Đà Nẵng",
+    "website": "https://anphat-mech.vn",
+    "public_email": "info@anphat-mech.vn",
+    "public_phone": "0236 3888 111",
+    "description": "Bản ghi gốc cặp trùng lặp 1 (trùng website)",
+    "source_url": "fixture://test_cases/duplicates.json#1",
+    "collected_at": "2026-10-14T08:00:00Z"
+  },
+  {
+    "company_name": "CÔNG TY TNHH CƠ KHÍ AN PHÁT",
+    "industry": "Manufacturing",
+    "sub_industry": "Cơ khí Chính xác",
+    "province": "Đà Nẵng",
+    "address": "Lô 5 KCN Hòa Khánh mở rộng, Liên Chiểu, Đà Nẵng",
+    "website": "https://anphat-mech.vn",
+    "public_email": "sales@anphat-mech.vn",
+    "public_phone": "0236 3888 222",
+    "description": "Bản ghi trùng lặp cặp 1 do trùng URL website 'https://anphat-mech.vn' (viết hoa tên công ty)",
+    "source_url": "fixture://test_cases/duplicates.json#2",
+    "collected_at": "2026-10-14T08:00:00Z"
+  },
+  {
+    "company_name": "Trung tâm Ngoại ngữ Á Châu",
+    "industry": "Education",
+    "sub_industry": "Đào tạo Ngoại ngữ",
+    "province": "Hồ Chí Minh",
+    "address": "456 Lê Văn Sỹ, Phường 14, Quận 3, TP.HCM",
+    "website": null,
+    "public_email": "achau.languages@gmail.com",
+    "public_phone": "028 3999 8888",
+    "description": "Bản ghi gốc cặp trùng lặp 2 (trùng tên chuẩn hóa + số điện thoại)",
+    "source_url": "fixture://test_cases/duplicates.json#3",
+    "collected_at": "2026-10-14T08:00:00Z"
+  },
+  {
+    "company_name": "Trung Tâm Ngoại Ngữ Á Châu",
+    "industry": "Education",
+    "sub_industry": "Ngoại ngữ Trẻ em",
+    "province": "Hồ Chí Minh",
+    "address": "458 Lê Văn Sỹ, Phường 14, Quận 3, TP.HCM",
+    "website": "https://achau-edu.vn",
+    "public_email": "contact@achau-edu.vn",
+    "public_phone": "028 3999 8888",
+    "description": "Bản ghi trùng lặp cặp 2 do trùng tên tương đương và trùng số điện thoại '028 3999 8888'",
+    "source_url": "fixture://test_cases/duplicates.json#4",
+    "collected_at": "2026-10-14T08:00:00Z"
+  },
+  {
+    "company_name": "Trường Quốc tế Sài Gòn Star",
+    "industry": "Education",
+    "sub_industry": "Giáo dục Quốc tế",
+    "province": "Hồ Chí Minh",
+    "address": "Số 7 Đường số 10, Phường Bình An, Thành phố Thủ Đức, TP.HCM",
+    "website": "https://saigonstar.edu.vn",
+    "public_email": "admissions@saigonstar.edu.vn",
+    "public_phone": "028 3740 6666",
+    "description": "Bản ghi độc lập không trùng lặp",
+    "source_url": "fixture://test_cases/duplicates.json#5",
+    "collected_at": "2026-10-14T08:00:00Z"
+  }
+]

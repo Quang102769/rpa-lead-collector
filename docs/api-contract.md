@@ -43,13 +43,13 @@ Tài liệu này kế thừa và tuân thủ tuyệt đối các Quyết định
 * **ADR-04: Xử lý Bất đồng bộ với `FastAPI BackgroundTasks`:** Khởi chạy tiến trình pipeline trong nền của cùng tiến trình server, không dùng worker Celery hay Redis.
 * **ADR-05: Độc lập LLM Provider Adapter:** Tách biệt module gọi mô hình AI; sử dụng chế độ JSON Schema Mode bắt buộc.
 * **ADR-06: Tham chiếu Địa lý Có Phiên bản:** Không hard-code danh sách 63 tỉnh/thành cũ; nạp động từ bộ dữ liệu tham chiếu có phiên bản, bao gồm Đà Nẵng.
-* **ADR-07: Chính sách Nguồn Dữ liệu và 2 Chế độ Chạy Nghiêm ngặt:** Chế độ mặc định là `FIXTURE`. Nguồn `LIVE` chỉ chạy khi được phê duyệt bằng văn bản. Tuyệt đối không âm thầm chuyển đổi (silent fallback) từ LIVE sang FIXTURE khi gặp lỗi.
-* **ADR-08: Chuẩn hóa 11 Trường Nghiệp vụ Canonical & 12 Cột Excel:** Tuân thủ từ điển dữ liệu tại [`docs/data-dictionary.md`](data-dictionary.md).
+* **ADR-07: Chính sách Nguồn Dữ liệu và 2 Chế độ Chạy Nghiêm ngặt (DEC-01-V2):** Chế độ mặc định là `FIXTURE`. Nguồn `LIVE` chỉ được phép kích hoạt khi domain nằm trong danh sách trắng `APPROVED_LIVE_SOURCES` và thỏa mãn chính sách kiểm soát kỹ thuật tự động. Tuyệt đối không âm thầm chuyển đổi (silent fallback) từ LIVE sang FIXTURE khi gặp lỗi.
+* **ADR-08: Chuẩn hóa 11 Trường Nghiệp vụ Canonical & 12 Cột Excel:** Tuân thủ từ điển dữ liệu tại [`docs/data-dictionary.md`](data-dictionary.md). Thông tin nguồn gốc thu thập (`source_url`, `collected_at`) được bảo toàn trong metadata/audit log nội bộ, không làm thay đổi 11 trường canonical công khai.
 
 ### 2.2 Các Giả định Kỹ thuật Cốt lõi
 1. **Môi trường Vận hành Đơn Người dùng:** Backend chạy tại `http://localhost:8000`, Frontend chạy tại `http://localhost:5173`. Không có xung đột truy cập đồng thời từ nhiều người dùng độc lập.
 2. **Vòng đời Bộ nhớ RAM:** Khi máy chủ FastAPI khởi động lại (restart), toàn bộ dữ liệu chiến dịch trong `InMemoryCampaignStore` sẽ bị xóa sạch. Các tệp Excel đã xuất thành công trong thư mục `exports/` vẫn được bảo toàn trên đĩa cứng.
-3. **Chính sách Nguồn LIVE Giai đoạn đầu (Phase 1):** Chưa có nguồn dữ liệu trực tiếp (LIVE) nào được phê duyệt chính thức theo [`docs/source-research.md`](source-research.md) cho Phase 1. Mọi lệnh chạy LIVE sẽ bị từ chối chính sách (trả lỗi `ERR_SRC_UNAPPROVED`), trừ khi cấu hình cho phép hoặc có phê duyệt mới.
+3. **Chính sách Nguồn LIVE và Whitelist (DEC-01-V2):** Mặc định biến môi trường `APPROVED_LIVE_SOURCES=[]` để đảm bảo an toàn tuyệt đối. Mọi lệnh chạy LIVE khi whitelist rỗng hoặc nguồn yêu cầu nằm ngoài danh sách cho phép sẽ bị từ chối chính sách (trả lỗi `ERR_SRC_UNAPPROVED` kèm HTTP 403). Khi whitelist được cấu hình domain hợp lệ, hệ thống cho phép tạo chiến dịch LIVE.
 
 ### 2.3 Ranh giới và Giới hạn Bảo mật MVP
 * **Phòng thủ Thoát Thư mục (Path Traversal Defense):** Endpoint tải file Excel tuyệt đối không nhận đường dẫn tệp tùy ý từ client; chỉ nhận `campaign_id` và xác thực đường dẫn lưu trữ bằng `Path.resolve().is_relative_to()`.
@@ -277,7 +277,7 @@ Tiếp nhận yêu cầu cấu hình chiến dịch, thực hiện kiểm thực
 
 #### 3. Quy tắc Kiểm tra Nguồn LIVE Đồng bộ (Synchronous Live Source Check):
 Nếu client gửi `execution_mode: "LIVE"`, Backend tiến hành đối chiếu cấu hình nguồn đã duyệt ngay tại thời điểm tiếp nhận request:
-* Nếu nguồn LIVE cho ngành tương ứng chưa được phê duyệt chính thức bằng văn bản (hiện tại cả 2 ngành đều chưa có nguồn LIVE được duyệt), Backend **từ chối ngay lập tức** bằng `HTTP 403 Forbidden` kèm mã lỗi `ERR_SRC_UNAPPROVED`.
+* Nếu nguồn LIVE yêu cầu chưa được cấu hình hợp lệ trong danh sách cho phép (`APPROVED_LIVE_SOURCES`) theo chính sách DEC-01-V2, Backend **từ chối ngay lập tức** bằng `HTTP 403 Forbidden` kèm mã lỗi `ERR_SRC_UNAPPROVED`.
 * Tuyệt đối không tạo Background Task và không âm thầm chuyển đổi sang FIXTURE.
 
 #### 4. Phản hồi Thành công (HTTP 202 Accepted):
@@ -326,7 +326,7 @@ Trả về mã định danh chiến dịch duy nhất để Frontend tiến hàn
     "error": {
       "code": "ERR_SRC_UNAPPROVED",
       "message": "Nguồn dữ liệu trực tiếp chưa được phê duyệt chính thức.",
-      "detail": "Nguồn thu thập LIVE cho ngành Education chưa có văn bản phê duyệt từ TechLead (DEC-01). Vui lòng chọn execution_mode là FIXTURE.",
+      "detail": "Nguồn thu thập LIVE chưa được cấu hình trong danh sách cho phép (APPROVED_LIVE_SOURCES) hoặc chưa đáp ứng chính sách truy cập kỹ thuật (DEC-01-V2). Vui lòng kiểm tra cấu hình hoặc chọn execution_mode là FIXTURE.",
       "stage": "STAGE_REQUEST_VALIDATION",
       "timestamp": "2026-10-13T09:30:00.000Z",
       "path": "/api/v1/campaigns",
@@ -836,7 +836,7 @@ Toàn bộ hệ thống AI RPA Lead Collector sở hữu chính xác **19 mã l�
 | **`ERR_EXPORT_NOT_READY`** | `400` / `409` | Exporter | Đồng bộ (Sync HTTP) | Tệp Excel chưa sẵn sàng để tải về. | Chiến dịch đang trong tiến trình xử lý hoặc chưa xuất file thành công. | Không (0) | Đang xử lý | Giữ nút tải file ở trạng thái Disabled (vô hiệu hóa). |
 | **`ERR_EXPORT_FILE_MISSING`**| `404` | Exporter | Đồng bộ (Sync HTTP) | Không tìm thấy tệp bảng tính trên đĩa. | Tệp vật lý trong thư mục `exports/` có thể đã bị xóa trên đĩa cứng. | Không (0) | Bị mất file | Hiển thị Toast đỏ: "Tệp đã bị xóa khỏi máy chủ". |
 | **`ERR_PATH_TRAVERSAL`** | `403` | API Layer | Đồng bộ (Sync HTTP) | Yêu cầu truy cập tệp bị từ chối do vi phạm an toàn. | Phát hiện dấu hiệu thoát thư mục lưu trữ `exports/`. Hệ thống chặn truy cập. | Không (0) | Giữ nguyên | Hiển thị cảnh báo bảo mật màu đỏ đậm. |
-| **`ERR_SRC_UNAPPROVED`** | `403` / Polling | Source Policy | Đồng bộ hoặc Polling | Nguồn dữ liệu chưa được phê duyệt chính thức. | Nguồn thu thập trực tiếp chưa có văn bản duyệt. Vui lòng chuyển sang Fixture Mode. | Không (0) | Không có lead | Nếu tạo form: Toast đỏ. Nếu Polling: Banner đỏ `FAILED`. |
+| **`ERR_SRC_UNAPPROVED`** | `403` / Polling | Source Policy | Đồng bộ hoặc Polling | Nguồn dữ liệu chưa nằm trong whitelist được cho phép. | Nguồn thu thập trực tiếp chưa được cấu hình trong APPROVED_LIVE_SOURCES hoặc vi phạm chính sách truy cập (DEC-01-V2). Vui lòng chuyển sang Fixture Mode. | Không (0) | Không có lead | Nếu tạo form: Toast đỏ. Nếu Polling: Banner đỏ `FAILED`. |
 | **`ERR_SRC_FIXTURE_MISSING`**| Polling | Collector | Polling `errors[]` | Thiếu tệp dữ liệu mẫu tĩnh (Fixture). | Tệp HTML mô phỏng không tồn tại trong thư mục `tests/fixtures/`. | Không (0) | Không có lead | Banner đỏ `FAILED`, báo lập trình viên kiểm tra fixture. |
 | **`ERR_SRC_TIMEOUT`** | Polling | Collector | Polling `errors[]` | Kết nối tới nguồn dữ liệu bị quá hạn (Timeout). | Máy chủ nguồn phản hồi chậm vượt quá 15s. Trang này đã được bỏ qua an toàn. | 1 lần (sau 3s)| **Có** | Banner vàng `PARTIAL_SUCCESS`, cho phép tải file. |
 | **`ERR_SRC_HTTP_RATE_LIMIT`**| Polling | Collector | Polling `errors[]` | Bị giới hạn tần suất truy cập từ máy chủ nguồn. | Máy chủ trả về mã HTTP 429/503. Hệ thống đã giãn cách truy cập và thử lại. | 2 lần (backoff)| **Có** | Banner vàng cảnh báo giãn cách cào dữ liệu. |
@@ -1155,7 +1155,7 @@ export function useCampaignPolling(campaignId: string | null) {
      "error": {
        "code": "ERR_SRC_UNAPPROVED",
        "message": "Nguồn dữ liệu trực tiếp chưa được phê duyệt chính thức.",
-       "detail": "Nguồn Trang Vàng chưa có văn bản phê duyệt từ TechLead (DEC-01). Vui lòng chọn execution_mode là FIXTURE.",
+       "detail": "Nguồn thu thập LIVE chưa được cấu hình trong danh sách cho phép (APPROVED_LIVE_SOURCES) hoặc chưa đáp ứng chính sách truy cập kỹ thuật (DEC-01-V2). Vui lòng kiểm tra cấu hình hoặc chọn execution_mode là FIXTURE.",
        "stage": "STAGE_REQUEST_VALIDATION",
        "timestamp": "2026-10-13T10:05:00.000Z",
        "path": "/api/v1/campaigns",

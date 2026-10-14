@@ -1,0 +1,54 @@
+[
+  {
+    "company_name": null,
+    "industry": "Education",
+    "sub_industry": "Ngoại ngữ",
+    "province": "Đà Nẵng",
+    "address": "123 Hải Châu, Đà Nẵng",
+    "website": "https://example.edu.vn",
+    "public_email": "info@example.edu.vn",
+    "public_phone": "0236 1234 567",
+    "description": "Bản ghi lỗi do không có company_name (null)",
+    "source_url": "fixture://test_cases/missing_required.json#1",
+    "collected_at": "2026-10-14T08:00:00Z"
+  },
+  {
+    "company_name": "   ",
+    "industry": "Education",
+    "sub_industry": "Ngoại ngữ",
+    "province": "Hà Nội",
+    "address": "456 Cầu Giấy, Hà Nội",
+    "website": "https://example2.edu.vn",
+    "public_email": "info@example2.edu.vn",
+    "public_phone": "024 1234 567",
+    "description": "Bản ghi lỗi do company_name toàn khoảng trắng",
+    "source_url": "fixture://test_cases/missing_required.json#2",
+    "collected_at": "2026-10-14T08:00:00Z"
+  },
+  {
+    "company_name": "Trung tâm Đào tạo Hợp lệ Mẫu",
+    "industry": "Education",
+    "sub_industry": "Ngoại ngữ",
+    "province": "Đà Nẵng",
+    "address": "789 Sơn Trà, Đà Nẵng",
+    "website": "https://valid-example.edu.vn",
+    "public_email": "info@valid-example.edu.vn",
+    "public_phone": "0236 9876 543",
+    "description": "Bản ghi lỗi do thiếu source_url",
+    "source_url": "",
+    "collected_at": "2026-10-14T08:00:00Z"
+  },
+  {
+    "company_name": "Trường Đào tạo Hợp lệ Chuẩn",
+    "industry": "Education",
+    "sub_industry": "Đào tạo Nghề",
+    "province": "Đà Nẵng",
+    "address": "101 Liên Chiểu, Đà Nẵng",
+    "website": "https://standard-valid.edu.vn",
+    "public_email": "admin@standard-valid.edu.vn",
+    "public_phone": "0236 3333 444",
+    "description": "Bản ghi hợp lệ đầy đủ để đối chứng kiểm thử validator.",
+    "source_url": "fixture://test_cases/missing_required.json#4",
+    "collected_at": "2026-10-14T08:00:00Z"
+  }
+]
