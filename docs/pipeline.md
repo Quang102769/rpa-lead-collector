@@ -188,19 +188,19 @@ CampaignSummaryMetrics & Cập nhật Trạng thái Cuối cùng (COMPLETED / PA
   * `rejection_reason: Optional[str]`
 * **Các bước xử lý nghiệp vụ:**
   1. Đọc danh sách cấu hình nguồn từ biến môi trường và file cấu hình tập trung (`src/config.py`).
-  2. **Rà soát Phê duyệt Chính thức:**
+  2. **Rà soát Chính sách Truy cập & Whitelist Kỹ thuật:**
      * Đối chiếu nguồn live với danh sách `APPROVED_LIVE_SOURCES`.
-     * **Nguyên tắc cốt lõi:** Việc website mục tiêu có thể truy cập được hoặc file `robots.txt` cho phép crawl **tuyệt đối không được coi là bằng chứng** nguồn đó đã được phê duyệt. Phải có chỉ đạo hoặc văn bản phê duyệt chính thức từ TechLead.
+     * **Nguyên tắc cốt lõi (DEC-01-V2):** Loại bỏ phê duyệt thủ công cá nhân của TechLead, thay thế bằng cơ chế kiểm soát kỹ thuật tự động: đối chiếu danh sách cho phép `APPROVED_LIVE_SOURCES`, kiểm tra domain hợp lệ, chống giả mạo URL và kiểm tra an toàn chuyển hướng. Việc website mục tiêu có thể truy cập được hoặc file `robots.txt` cho phép crawl **tuyệt đối không đồng nghĩa** nguồn đó được phép thu thập nếu không nằm trong whitelist cấu hình.
   3. **Phân nhánh Chế độ Thực thi:**
-     * *Trường hợp 1 (Yêu cầu LIVE nhưng chưa có nguồn duyệt):* Nếu `execution_mode == "LIVE"` nhưng danh sách nguồn live chưa được TechLead ký duyệt (hiện tại có 0 nguồn được duyệt theo [docs/source-research.md](file:///D:/ai-rpa-lead-generator/docs/source-research.md)):
-       * **Tuyệt đối cấm phát sinh request mạng tới nguồn live chưa duyệt.**
-       * Nếu cấu hình hệ thống và người dùng cho phép fallback: **Từ chối chạy live**, ghi nhận cảnh báo rõ ràng và chuyển hướng có kiểm soát sang chế độ `FIXTURE`, cập nhật `effective_mode = "FIXTURE"`, ghi log kiểm toán: `"Live sources not approved by TechLead. Fallback to Fixture Mode"`.
+     * *Trường hợp 1 (Yêu cầu LIVE nhưng chưa có nguồn trong whitelist):* Nếu `execution_mode == "LIVE"` nhưng danh sách nguồn live chưa được cấu hình cho phép trong `APPROVED_LIVE_SOURCES`:
+       * **Tuyệt đối cấm phát sinh request mạng tới nguồn live chưa nằm trong whitelist.**
+       * Nếu cấu hình hệ thống và người dùng cho phép fallback: **Từ chối chạy live**, ghi nhận cảnh báo rõ ràng và chuyển hướng có kiểm soát sang chế độ `FIXTURE`, cập nhật `effective_mode = "FIXTURE"`, ghi log kiểm toán: `"Live source not in approved whitelist. Fallback to Fixture Mode"`.
        * Nếu cấu hình không cho phép fallback: Lập tức từ chối thực thi với mã lỗi `ERR_SRC_UNAPPROVED`, dừng chiến dịch.
-     * *Trường hợp 2 (Yêu cầu FIXTURE):* Chấp thuận thực thi ở chế độ `effective_mode = "FIXTURE"`, nạp cấu hình danh sách fixture paths tương ứng với ngành và địa bàn từ `tests/fixtures/`.
-     * *Trường hợp 3 (Yêu cầu LIVE và nguồn đã được duyệt):* Chấp thuận thực thi ở chế độ `effective_mode = "LIVE"`, nạp cấu hình rate limit riêng biệt của nguồn đó (ví dụ: Trang Vàng tuân thủ `delay = 5.0s` theo chỉ thị `Crawl-delay`).
-* **Điều kiện thành công:** Nguồn được phê duyệt hoặc chuyển đổi hợp lệ sang Fixture Mode với đầy đủ cấu hình kết nối.
-* **Các lỗi có thể xảy ra:** `ERR_SRC_UNAPPROVED` (Nguồn chưa duyệt và không cho phép fallback), `ERR_SRC_FIXTURE_MISSING` (Thư mục fixture không tồn tại file mẫu phù hợp).
-* **Hành vi khi lỗi:** Ghi log mức `CRITICAL`. Orchestrator cập nhật chiến dịch sang `CampaignStatus.FAILED` kèm thông điệp giải thích rõ: `"Campaign rejected by Source Policy: Live source unapproved by TechLead"`. Pipeline dừng lại ngay lập tức.
+     * *Trường hợp 2 (Yêu cầu FIXTURE):* Chấp thuận thực thi ở chế độ `effective_mode = "FIXTURE"`, nạp cấu hình danh sách fixture paths tương ứng với ngành và địa bàn từ `data/fixtures/` (hỗ trợ Toàn quốc và Đà Nẵng).
+     * *Trường hợp 3 (Yêu cầu LIVE và nguồn nằm trong whitelist cấu hình):* Chấp thuận thực thi ở chế độ `effective_mode = "LIVE"`, nạp cấu hình rate limit riêng biệt của nguồn đó (ví dụ: Trang Vàng tuân thủ `delay = 5.0s` theo chỉ thị `Crawl-delay`).
+* **Điều kiện thành công:** Nguồn nằm trong whitelist hợp lệ hoặc chuyển đổi an toàn sang Fixture Mode với đầy đủ cấu hình kết nối.
+* **Các lỗi có thể xảy ra:** `ERR_SRC_UNAPPROVED` (Nguồn chưa được cấu hình trong whitelist và không cho phép fallback), `ERR_SRC_FIXTURE_MISSING` (Thư mục fixture không tồn tại file mẫu phù hợp).
+* **Hành vi khi lỗi:** Ghi log mức `CRITICAL`. Orchestrator cập nhật chiến dịch sang `CampaignStatus.FAILED` kèm thông điệp giải thích rõ: `"Campaign rejected by Source Policy: Live source not in approved whitelist (DEC-01-V2)"`. Pipeline dừng lại ngay lập tức.
 * **Dữ liệu/Metadata giữ lại:** Quyết định chính sách, `effective_mode`, lý do từ chối (nếu có).
 * **Điều kiện chuyển giai đoạn:** `is_allowed == True` → Chuyển sang Giai đoạn 4.
 
@@ -675,7 +675,7 @@ Bảng dưới đây định nghĩa chi tiết toàn bộ 14 mã lỗi chuẩn t
 | error_code | stage | cause | retryable | retry_limit | retry_condition | failure_scope | effect_on_campaign_status |
 | :--- | :---: | :--- | :---: | :---: | :--- | :---: | :---: |
 | **`ERR_CFG_INVALID`** | Giai đoạn 1 | Payload sai kiểu, thiếu tên, sai ngành, chọn PROVINCE nhưng thiếu target_province. | **Không** | 0 | Không retry lỗi cú pháp đầu vào. | Toàn chiến dịch | Bị từ chối ngay tại API (HTTP 422) |
-| **`ERR_SRC_UNAPPROVED`**| Giai đoạn 3 | Nguồn live chưa được TechLead phê duyệt và hệ thống không bật fixture fallback. | **Không** | 0 | Không retry lỗi vi phạm chính sách pháp lý. | Toàn chiến dịch | `FAILED` |
+| **`ERR_SRC_UNAPPROVED`**| Giai đoạn 3 | Nguồn live chưa nằm trong whitelist được cấu hình (APPROVED_LIVE_SOURCES) hoặc vi phạm chính sách kiểm soát truy cập kỹ thuật. | **Không** | 0 | Không retry lỗi vi phạm chính sách truy cập. | Toàn chiến dịch | `FAILED` |
 | **`ERR_SRC_FIXTURE_MISSING`**| Giai đoạn 3, 4 | Thiếu file HTML mẫu tĩnh trong thư mục `tests/fixtures/`. | **Không** | 0 | Lỗi thiếu file cấu hình/fixture nội bộ. | Toàn chiến dịch | `FAILED` |
 | **`ERR_SRC_TIMEOUT`** | Giai đoạn 4 | Máy chủ nguồn phản hồi chậm vượt quá thời gian chờ (15s). | **Có** | 1 | Thử lại 01 lần sau 3.0s nếu chưa vượt quá tổng thời gian xử lý. | 1 trang web | `PARTIAL_SUCCESS` |
 | **`ERR_SRC_HTTP_RATE_LIMIT`**| Giai đoạn 4 | Máy chủ nguồn trả về mã HTTP 429 hoặc 503. | **Có** | 2 | Exponential Backoff (chờ 2s → 4s), tôn trọng Retry-After nếu có. | 1 trang web | `PARTIAL_SUCCESS` |
@@ -810,7 +810,7 @@ Các quyết định mở dưới đây cần người phụ trách kỹ thuật
 
 | ID | Vấn đề cần quyết định | Phương án đề xuất | Căn cứ | Người có thẩm quyền quyết định | Ảnh hưởng nếu chưa chốt | Thành phần nào bị chặn triển khai |
 | :---: | :--- | :--- | :--- | :---: | :--- | :--- |
-| **`DEC-01`** | **Phê duyệt Nguồn Live Chính thức** | Mặc định vận hành ở **Fixture Mode** chạy trên dữ liệu mẫu offline tại `tests/fixtures/` cho giai đoạn thử nghiệm ban đầu (Phase 1). | Báo cáo `docs/source-research.md` (mục 1.2: 0 nguồn live được duyệt). | TechLead | Pipeline phải dùng dữ liệu fixture đa địa phương có gắn nhãn mô phỏng minh bạch. | Không bị chặn (Chạy Fixture Mode). Bị chặn nếu muốn chạy Live Crawling. |
+| **`DEC-01-V2`** | **Kiểm soát Nguồn LIVE Kỹ thuật Tự động (Thay thế DEC-01 từ 14/10/2026)** | Loại bỏ phê duyệt thủ công của TechLead; chuyển sang cơ chế kiểm soát kỹ thuật tự động: đối chiếu danh sách trắng `APPROVED_LIVE_SOURCES`, kiểm tra `robots.txt`, crawl-delay, rate limiting, an toàn domain và ghi audit log. Mặc định whitelist rỗng và chạy FIXTURE mode. | Báo cáo `docs/source-research.md` (DEC-01-V2); `docs/implementation-plan.md`. | Technical Authority / PO | Provenance lưu trong metadata/audit liên kết với Lead; 11 trường canonical giữ nguyên. | Không bị chặn (Chạy Fixture Mode). LIVE yêu cầu cấu hình whitelist hợp lệ. |
 | **`DEC-02`** | **Văn bản Danh mục Địa lý & Xử lý Tên Lịch sử** | Sử dụng bộ dữ liệu có phiên bản `data/provinces_reference.json` (tham chiếu GSO kèm alias); địa danh lịch sử chỉ ánh xạ khi có quy tắc rõ ràng; thiếu thông tin gán `null`. | Báo cáo `docs/source-research.md` (mục 3.2: VASI khuyết thiếu Đà Nẵng); `docs/PRD.md` (FR-05). | TechLead | Pipeline nạp từ điển JSON độc lập ngoài code; nếu có quyết định mới, chỉ cập nhật file JSON mà không sửa code. | Không bị chặn (Áp dụng từ điển JSON tham chiếu tạm thời). |
 | **`DEC-03`** | **Chỉ số Giới hạn Bản ghi Demo (`max_records`)** | Thiết lập cấu hình mặc định là **20 bản ghi** và mức trần tối đa **50 bản ghi** cho mỗi lượt chạy demo. | `docs/PRD.md` (AC-01.2: đề xuất mặc định 20 bản ghi). | TechLead | Giữ tốc độ demo local và kiểm soát chi phí gọi token LLM API. | Không bị chặn (Áp dụng cấu hình mặc định 20/50). |
 | **`DEC-04`** | **Ngôn ngữ Tiêu đề Hiển thị Cột trong File Excel** | File Excel hỗ trợ tiêu đề tiếng Anh chuẩn `docs/data-dictionary.md` (`Company Name`, `Industry`...) hoặc ánh xạ tiếng Việt có dấu (`Tên Doanh nghiệp`, `Ngành nghề`...) qua từ điển mapping. | `docs/data-dictionary.md` (Bảng 8.3 dùng tiếng Anh); `docs/PRD.md` (yêu cầu báo cáo trực quan cho người dùng Việt). | TechLead | Exporter xây dựng sẵn từ điển ánh xạ tiêu đề `HEADER_MAPPING`; chỉ cần đổi cấu hình mà không sửa logic pipeline. | Không bị chặn (Mặc định tiêu đề tiếng Anh kèm từ điển mapping sẵn sàng). |
