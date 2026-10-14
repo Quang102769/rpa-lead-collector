@@ -52,6 +52,16 @@ class Campaign:
 
     total_records: int = 0
     error_count: int = 0
+
+    # Pipeline execution metrics
+    raw_records_scanned: int = 0
+    records_extracted: int = 0
+    records_valid: int = 0
+    records_partial: int = 0
+    records_rejected: int = 0
+    duplicates_removed: int = 0
+    final_unique_leads: int = 0
+
     warning_zero_records: bool = False
 
     export_file: str | None = None
@@ -84,6 +94,22 @@ class Campaign:
 
         if type(self.error_count) is not int or self.error_count < 0:
             raise ValueError("error_count phải là số nguyên không âm")
+
+        metric_fields = (
+            "raw_records_scanned",
+            "records_extracted",
+            "records_valid",
+            "records_partial",
+            "records_rejected",
+            "duplicates_removed",
+            "final_unique_leads",
+        )
+        for field_name in metric_fields:
+            value = getattr(self, field_name)
+            if type(value) is not int or value < 0:
+                raise ValueError(
+                    f"{field_name} phải là số nguyên không âm"
+                )
 
         if not isinstance(self.warning_zero_records, bool):
             raise ValueError("warning_zero_records phải là kiểu boolean")

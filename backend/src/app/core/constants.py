@@ -10,6 +10,7 @@ APP_VERSION: str = "1.0.0"
 BACKEND_DIR: Path = Path(__file__).resolve().parents[3]
 EXPORTS_DIR: Path = BACKEND_DIR / "exports"
 LOGS_DIR: Path = BACKEND_DIR / "logs"
+DEFAULT_FIXTURES_DIR: Path = BACKEND_DIR / "config" / "fixtures"
 
 DEFAULT_RATE_LIMIT_DELAY: float = 1.5
 
