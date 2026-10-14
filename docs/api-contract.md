@@ -101,7 +101,7 @@ Mọi mốc thời gian trao đổi qua API bắt buộc phải tuân theo chu�
 | **`202 Accepted`** | Accepted | Tiếp nhận tạo chiến dịch thành công; tiến trình được chuyển giao cho BackgroundTasks. |
 | **`400 Bad Request`** | Bad Request | Yêu cầu không hợp lệ về mặt ngữ cảnh (ví dụ: tải file khi file chưa sẵn sàng `ERR_EXPORT_NOT_READY`). |
 | **`403 Forbidden`** | Forbidden | Bị từ chối truy cập do vi phạm an toàn (Path Traversal `ERR_PATH_TRAVERSAL` hoặc nguồn cấm `ERR_SRC_UNAPPROVED`). |
-| **`404 Not Found`** | Not Found | Không tìm thấy tài nguyên (`campaign_id` không tồn tại, file Excel trên đĩa bị xóa). |
+| **`404 Not Found`** | Not Found | Không tìm thấy tài nguyên: phân biệt rõ `ERR_ROUTE_NOT_FOUND` (đường dẫn URL không tồn tại) và `ERR_CAMPAIGN_NOT_FOUND` (chiến dịch không tồn tại trong store). |
 | **`409 Conflict`** | Conflict | *[Đề xuất đang chờ xác nhận]* Trạng thái tài nguyên xung đột khi yêu cầu tải file trước khi pipeline hoàn tất. |
 | **`422 Unprocessable Entity`** | Validation Error | Dữ liệu đầu vào vi phạm schema Pydantic (`ERR_CFG_INVALID`). |
 | **`500 Internal Server Error`** | Server Error | Lỗi hệ thống nội bộ chưa được bắt (Unhandled Exception), che giấu stack trace (`ERR_SYS_INTERNAL`). |
@@ -271,9 +271,9 @@ Tiếp nhận yêu cầu cấu hình chiến dịch, thực hiện kiểm thực
 | `campaign_name` | `string` | **Có** | — | Độ dài 3 – 100 ký tự. Không chứa ký tự điều khiển ASCII. Cắt tỉa khoảng trắng đầu cuối. |
 | `industry` | `string` | **Có** | — | Chỉ chấp nhận: `"Education"` hoặc `"Manufacturing"`. Phân biệt chữ hoa/thường. |
 | `geographic_scope`| `string` | **Có** | — | Chỉ chấp nhận: `"NATIONWIDE"` (Toàn quốc) hoặc `"PROVINCE"` (Theo tỉnh/thành). |
-| `target_province` | `string` | Tùy biến | `null` | • Nếu `geographic_scope == "PROVINCE"`: Bắt buộc chuỗi không rỗng (ví dụ: `"Đà Nẵng"`).<br>• Nếu `geographic_scope == "NATIONWIDE"`: Bắt buộc là `null` hoặc chuỗi rỗng. |
+| `target_province` | `string` | Tùy biến | `null` | • Nếu `geographic_scope == "PROVINCE"`: Bắt buộc mã hoặc tên chuỗi không rỗng (ví dụ: mã `"48"` hoặc `"Đà Nẵng"`).<br>• Nếu `geographic_scope == "NATIONWIDE"`: Tự động chuẩn hóa về `null` (None). |
 | `max_records` | `integer`| Không | `20` | Số nguyên trong khoảng từ `5` đến `50`. |
-| `execution_mode` | `string` | Không | `"FIXTURE"` | Chỉ chấp nhận: `"FIXTURE"` hoặc `"LIVE"`. |
+| `execution_mode` | `string` | Không | `"FIXTURE"` | Chỉ chấp nhận: `"FIXTURE"` hoặc `"LIVE"`. Hỗ trợ chuẩn hóa tự động cắt khoảng trắng và viết hoa (`strip().upper()`). |
 
 #### 3. Quy tắc Kiểm tra Nguồn LIVE Đồng bộ (Synchronous Live Source Check):
 Nếu client gửi `execution_mode: "LIVE"`, Backend tiến hành đối chiếu cấu hình nguồn đã duyệt ngay tại thời điểm tiếp nhận request:
@@ -369,10 +369,13 @@ Endpoint phục vụ cơ chế **Polling định kỳ (1.5s – 2.0s)** từ Web
       "final_unique_leads": 0
     },
     "errors": [],
+    "total_records": 0,
     "warning_zero_records": false,
+    "export_file": null,
     "export_file_ready": false,
     "export_url": null,
     "created_at": "2026-10-13T09:30:00.000Z",
+    "updated_at": "2026-10-13T09:30:02.000Z",
     "started_at": "2026-10-13T09:30:02.000Z",
     "completed_at": null
   }
@@ -402,10 +405,13 @@ Endpoint phục vụ cơ chế **Polling định kỳ (1.5s – 2.0s)** từ Web
       "final_unique_leads": 15
     },
     "errors": [],
+    "total_records": 15,
     "warning_zero_records": false,
+    "export_file": "exports/cmp_20261013_093000_abc123.xlsx",
     "export_file_ready": true,
     "export_url": "/api/v1/campaigns/cmp_20261013_093000_abc123/export",
     "created_at": "2026-10-13T09:30:00.000Z",
+    "updated_at": "2026-10-13T09:30:25.000Z",
     "started_at": "2026-10-13T09:30:02.000Z",
     "completed_at": "2026-10-13T09:30:25.000Z"
   }
@@ -456,9 +462,12 @@ Pipeline xuất được Excel cho 11 lead hợp lệ, nhưng trong quá trình 
       }
     ],
     "warning_zero_records": false,
+    "total_records": 11,
+    "export_file": "exports/cmp_20261013_093000_abc123.xlsx",
     "export_file_ready": true,
     "export_url": "/api/v1/campaigns/cmp_20261013_093000_abc123/export",
     "created_at": "2026-10-13T09:30:00.000Z",
+    "updated_at": "2026-10-13T09:30:35.000Z",
     "started_at": "2026-10-13T09:30:02.000Z",
     "completed_at": "2026-10-13T09:30:35.000Z"
   }
@@ -499,10 +508,13 @@ Pipeline xuất được Excel cho 11 lead hợp lệ, nhưng trong quá trình 
         "recoverable": false
       }
     ],
+    "total_records": 0,
     "warning_zero_records": false,
+    "export_file": null,
     "export_file_ready": false,
     "export_url": null,
     "created_at": "2026-10-13T09:30:00.000Z",
+    "updated_at": "2026-10-13T09:30:05.000Z",
     "started_at": "2026-10-13T09:30:02.000Z",
     "completed_at": "2026-10-13T09:30:05.000Z"
   }
