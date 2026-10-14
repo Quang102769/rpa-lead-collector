@@ -1,0 +1,281 @@
+{
+  "version": "2026.1-ADMIN-UNITS",
+  "source_reference": "Danh mục đơn vị hành chính cấp tỉnh Việt Nam",
+  "last_updated": "2026-07-01",
+  "total_count": 34,
+  "default_selection": "48",
+  "provinces": [
+    {
+      "code": "01",
+      "name": "Thành phố Hà Nội",
+      "type": "thanh_pho",
+      "region": "Miền Bắc",
+      "is_active": true,
+      "aliases": ["Ha Noi", "HN", "TP. Hà Nội", "Hà Nội"]
+    },
+    {
+      "code": "48",
+      "name": "Thành phố Đà Nẵng",
+      "type": "thanh_pho",
+      "region": "Miền Trung",
+      "is_active": true,
+      "aliases": ["Da Nang", "TP Da Nang", "TP. Đà Nẵng", "Đà Nẵng"]
+    },
+    {
+      "code": "79",
+      "name": "Thành phố Hồ Chí Minh",
+      "type": "thanh_pho",
+      "region": "Miền Nam",
+      "is_active": true,
+      "aliases": ["Ho Chi Minh", "TPHCM", "TP. Hồ Chí Minh", "Hồ Chí Minh", "Sài Gòn"]
+    },
+    {
+      "code": "31",
+      "name": "Thành phố Hải Phòng",
+      "type": "thanh_pho",
+      "region": "Miền Bắc",
+      "is_active": true,
+      "aliases": ["Hai Phong", "TP. Hải Phòng", "Hải Phòng"]
+    },
+    {
+      "code": "92",
+      "name": "Thành phố Cần Thơ",
+      "type": "thanh_pho",
+      "region": "Miền Nam",
+      "is_active": true,
+      "aliases": ["Can Tho", "TP. Cần Thơ", "Cần Thơ"]
+    },
+    {
+      "code": "46",
+      "name": "Thành phố Huế",
+      "type": "thanh_pho",
+      "region": "Miền Trung",
+      "is_active": true,
+      "aliases": ["Hue", "Thừa Thiên Huế", "TP. Huế", "Huế"]
+    },
+    {
+      "code": "02",
+      "name": "Tỉnh Hà Giang",
+      "type": "tinh",
+      "region": "Miền Bắc",
+      "is_active": true,
+      "aliases": ["Ha Giang", "Hà Giang"]
+    },
+    {
+      "code": "04",
+      "name": "Tỉnh Cao Bằng",
+      "type": "tinh",
+      "region": "Miền Bắc",
+      "is_active": true,
+      "aliases": ["Cao Bang", "Cao Bằng"]
+    },
+    {
+      "code": "08",
+      "name": "Tỉnh Tuyên Quang",
+      "type": "tinh",
+      "region": "Miền Bắc",
+      "is_active": true,
+      "aliases": ["Tuyen Quang", "Tuyên Quang"]
+    },
+    {
+      "code": "10",
+      "name": "Tỉnh Lào Cai",
+      "type": "tinh",
+      "region": "Miền Bắc",
+      "is_active": true,
+      "aliases": ["Lao Cai", "Lào Cai"]
+    },
+    {
+      "code": "11",
+      "name": "Tỉnh Điện Biên",
+      "type": "tinh",
+      "region": "Miền Bắc",
+      "is_active": true,
+      "aliases": ["Dien Bien", "Điện Biên"]
+    },
+    {
+      "code": "12",
+      "name": "Tỉnh Lai Châu",
+      "type": "tinh",
+      "region": "Miền Bắc",
+      "is_active": true,
+      "aliases": ["Lai Chau", "Lai Châu"]
+    },
+    {
+      "code": "14",
+      "name": "Tỉnh Sơn La",
+      "type": "tinh",
+      "region": "Miền Bắc",
+      "is_active": true,
+      "aliases": ["Son La", "Sơn La"]
+    },
+    {
+      "code": "15",
+      "name": "Tỉnh Yên Bái",
+      "type": "tinh",
+      "region": "Miền Bắc",
+      "is_active": true,
+      "aliases": ["Yen Bai", "Yên Bái"]
+    },
+    {
+      "code": "17",
+      "name": "Tỉnh Hòa Bình",
+      "type": "tinh",
+      "region": "Miền Bắc",
+      "is_active": true,
+      "aliases": ["Hoa Binh", "Hòa Bình"]
+    },
+    {
+      "code": "19",
+      "name": "Tỉnh Thái Nguyên",
+      "type": "tinh",
+      "region": "Miền Bắc",
+      "is_active": true,
+      "aliases": ["Thai Nguyen", "Thái Nguyên"]
+    },
+    {
+      "code": "20",
+      "name": "Tỉnh Lạng Sơn",
+      "type": "tinh",
+      "region": "Miền Bắc",
+      "is_active": true,
+      "aliases": ["Lang Son", "Lạng Sơn"]
+    },
+    {
+      "code": "22",
+      "name": "Tỉnh Quảng Ninh",
+      "type": "tinh",
+      "region": "Miền Bắc",
+      "is_active": true,
+      "aliases": ["Quang Ninh", "Quảng Ninh"]
+    },
+    {
+      "code": "24",
+      "name": "Tỉnh Bắc Giang",
+      "type": "tinh",
+      "region": "Miền Bắc",
+      "is_active": true,
+      "aliases": ["Bac Giang", "Bắc Giang"]
+    },
+    {
+      "code": "25",
+      "name": "Tỉnh Phú Thọ",
+      "type": "tinh",
+      "region": "Miền Bắc",
+      "is_active": true,
+      "aliases": ["Phu Tho", "Phú Thọ"]
+    },
+    {
+      "code": "27",
+      "name": "Tỉnh Bắc Ninh",
+      "type": "tinh",
+      "region": "Miền Bắc",
+      "is_active": true,
+      "aliases": ["Bac Ninh", "Bắc Ninh"]
+    },
+    {
+      "code": "30",
+      "name": "Tỉnh Hải Dương",
+      "type": "tinh",
+      "region": "Miền Bắc",
+      "is_active": true,
+      "aliases": ["Hai Duong", "Hải Dương"]
+    },
+    {
+      "code": "33",
+      "name": "Tỉnh Hưng Yên",
+      "type": "tinh",
+      "region": "Miền Bắc",
+      "is_active": true,
+      "aliases": ["Hung Yen", "Hưng Yên"]
+    },
+    {
+      "code": "35",
+      "name": "Tỉnh Hà Nam",
+      "type": "tinh",
+      "region": "Miền Bắc",
+      "is_active": true,
+      "aliases": ["Ha Nam", "Hà Nam"]
+    },
+    {
+      "code": "37",
+      "name": "Tỉnh Ninh Bình",
+      "type": "tinh",
+      "region": "Miền Bắc",
+      "is_active": true,
+      "aliases": ["Ninh Binh", "Ninh Bình"]
+    },
+    {
+      "code": "38",
+      "name": "Tỉnh Thanh Hóa",
+      "type": "tinh",
+      "region": "Miền Trung",
+      "is_active": true,
+      "aliases": ["Thanh Hoa", "Thanh Hóa"]
+    },
+    {
+      "code": "40",
+      "name": "Tỉnh Nghệ An",
+      "type": "tinh",
+      "region": "Miền Trung",
+      "is_active": true,
+      "aliases": ["Nghe An", "Nghệ An"]
+    },
+    {
+      "code": "42",
+      "name": "Tỉnh Hà Tĩnh",
+      "type": "tinh",
+      "region": "Miền Trung",
+      "is_active": true,
+      "aliases": ["Ha Tinh", "Hà Tĩnh"]
+    },
+    {
+      "code": "44",
+      "name": "Tỉnh Quảng Bình",
+      "type": "tinh",
+      "region": "Miền Trung",
+      "is_active": true,
+      "aliases": ["Quang Binh", "Quảng Bình"]
+    },
+    {
+      "code": "45",
+      "name": "Tỉnh Quảng Trị",
+      "type": "tinh",
+      "region": "Miền Trung",
+      "is_active": true,
+      "aliases": ["Quang Tri", "Quảng Trị"]
+    },
+    {
+      "code": "49",
+      "name": "Tỉnh Quảng Nam",
+      "type": "tinh",
+      "region": "Miền Trung",
+      "is_active": true,
+      "aliases": ["Quang Nam", "Quảng Nam"]
+    },
+    {
+      "code": "52",
+      "name": "Tỉnh Bình Định",
+      "type": "tinh",
+      "region": "Miền Trung",
+      "is_active": true,
+      "aliases": ["Binh Dinh", "Bình Định"]
+    },
+    {
+      "code": "56",
+      "name": "Tỉnh Khánh Hòa",
+      "type": "tinh",
+      "region": "Miền Trung",
+      "is_active": true,
+      "aliases": ["Khanh Hoa", "Khánh Hòa"]
+    },
+    {
+      "code": "60",
+      "name": "Tỉnh Đắk Lắk",
+      "type": "tinh",
+      "region": "Tây Nguyên",
+      "is_active": true,
+      "aliases": ["Dak Lak", "Đắk Lắk"]
+    }
+  ]
+}
