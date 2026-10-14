@@ -28,6 +28,7 @@ class CampaignService:
     def create_campaign(
         self,
         *,
+        campaign_name: str = "",
         execution_mode: str = "FIXTURE",
         max_records: int = 20,
         config: dict | None = None,
@@ -50,6 +51,7 @@ class CampaignService:
             raise SourceUnapprovedError()
 
         campaign = Campaign(
+            campaign_name=campaign_name,
             execution_mode=mode,
             max_records=max_records,
             config=config if config is not None else {},

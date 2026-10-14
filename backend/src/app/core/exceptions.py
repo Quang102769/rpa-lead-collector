@@ -143,15 +143,18 @@ class SourceUnapprovedError(AppException):
 
     def __init__(
         self,
-        message: str = "Nguồn dữ liệu trực tiếp chưa được phê duyệt.",
-        detail: str | None = None,
+        message: str = "Nguồn dữ liệu trực tiếp chưa được phê duyệt chính thức.",
+        detail: str | None = (
+            "Nguồn thu thập LIVE chưa có văn bản phê duyệt từ TechLead (DEC-01). "
+            "Vui lòng chọn execution_mode là FIXTURE."
+        ),
     ) -> None:
         super().__init__(
             code=constants.ERR_SRC_UNAPPROVED,
             message=message,
             detail=detail,
             status_code=403,
-            stage=constants.STAGE_POLICY_CHECK,
+            stage=constants.STAGE_REQUEST_VALIDATION,
         )
 
 

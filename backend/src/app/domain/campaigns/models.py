@@ -39,6 +39,7 @@ class Campaign:
     """Domain model lưu thông tin và trạng thái của một chiến dịch thu thập dữ liệu."""
 
     campaign_id: UUID = field(default_factory=uuid4)
+    campaign_name: str = ""
     status: CampaignStatus = CampaignStatus.PENDING
 
     execution_mode: str = "FIXTURE"
